@@ -33,7 +33,7 @@ module.exports = {
 
     plugins: [
         // generate dist/index.html from template and inject bundle tag
-        new HtmlWebpackPlugins({ template: './public/index.html' }),
+        new HtmlWebpackPlugin({ template: './public/index.html' }),
 
         //
         new webpack.DefinePlugin({

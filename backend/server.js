@@ -37,7 +37,7 @@ app.get('/api/health', (req, res) => {
     res.json({ status: 'ok' })
 });
 
-app.use('/api/users', usersRouter)
+app.use('/api/users', usersRouter);
 
 // error handling
 app.use((err, req, res, next) => {
