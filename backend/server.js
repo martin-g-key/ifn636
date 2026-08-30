@@ -8,23 +8,28 @@ const fs = require('fs');
 const path = require('path');
 const express = require('express');
 const cors = require ('cors');
+// modules -- authentication
+const {login, requireAuth } = require('./auth');
 
 // app functions
 const { initDB } = require('./db');
 const usersRouter = require('./users-routes');
 
 // start up express
-const app = express()
+const app = express();
 const PORT = process.env.PORT || 3001;
-
-// Functions to be used on every request, before handler
-app.use(cors());
-app.use(express.json());
 
 app.use((req, res, next) => {
     console.log(`${req.method} ${req.url}`);
     next(); 
 });
+
+
+// Functions to be used on every request, before handler
+app.use(cors());
+app.use(express.json());
+
+
 
 // ------ routes ------ 
 // routes -- hello world
@@ -37,7 +42,7 @@ app.get('/api/health', (req, res) => {
     res.json({ status: 'ok' })
 });
 
-app.use('/api/users', usersRouter);
+// app.use('/api/users', usersRouter); --> deprecated as 
 
 // error handling
 app.use((err, req, res, next) => {
@@ -57,5 +62,11 @@ if(require.main === module) {
         });
     });
 }
+
+// authentication routes
+app.post('/api/login', login);
+
+app.use('/api/users', requireAuth, usersRouter);;
+
 
 module.exports = app;
