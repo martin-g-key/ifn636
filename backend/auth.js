@@ -1,5 +1,9 @@
 // define routes to support authentication feature
 
+// ensure .env is loaded in memory
+require('dotenv').config();
+
+
 // imports
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
@@ -29,7 +33,10 @@ async function login(req, res, next) {
         );
         // create a toekn json with  credentials 
         res.json({token, user: {username: user.username, role: user.role } });
-    } catch (error) {next(err); }
+    } catch (error) {
+        // more details to help debug
+        console.error('login error:', error);
+        next(error); }
 }
 
 

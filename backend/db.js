@@ -34,14 +34,15 @@ async function initDB() {
         )
     `);
 
-    await seedAdmin(db);
+    // add a generic admin user
+    await seedEmployer(db);
 
     return db
     
 }
 
 // run inside initDB after table is created. 
-async function seedAdmin(db) {
+async function seedEmployer(db) {
     const existing = await db.get('SELECT id FROM users WHERE username = ?', 'employer');
     if (!existing) {
 
@@ -57,5 +58,6 @@ async function seedAdmin(db) {
     }
 
 }
+
 
 module.exports = { getDB, initDB };

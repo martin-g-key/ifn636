@@ -42,8 +42,6 @@ app.get('/api/health', (req, res) => {
     res.json({ status: 'ok' })
 });
 
-// app.use('/api/users', usersRouter); --> deprecated as 
-
 // error handling
 app.use((err, req, res, next) => {
     console.error(err);
@@ -66,7 +64,7 @@ if(require.main === module) {
 // authentication routes
 app.post('/api/login', login);
 
-app.use('/api/users', requireAuth, usersRouter);;
+app.use('/api/users', requireAuth, usersRouter);
 
 
 module.exports = app;

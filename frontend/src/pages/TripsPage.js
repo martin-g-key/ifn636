@@ -10,11 +10,13 @@ import React, { useState, useEffect } from 'react';
 
 
 export default function TripsPage() {
+
+/*
     // const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-/*
+
     useEffect(() => {
         fetchUsers()
             .then((data) => setUsers(data))
@@ -33,13 +35,15 @@ export default function TripsPage() {
         }
     };
 
-*/ 
+
 
     if (loading) return <p>Loading...</p>;
+*/ 
 
     return (
         <div>
             <h1>skeleton app</h1>
+            <h2> trips page</h2>
             {error && <p style={{color: 'red' }}>Error: {error}</p>}
         </div>
     );
