@@ -28,7 +28,7 @@ export async function createUser(username, password, role, employer_username) {
 
 // fetchEmployers
 export async function fetchEmployers() {
-    const res = await fetch(`${API_BASE}/api/users/employeers`, { headers: { ...authHeaders() } });
+    const res = await fetch(`${API_BASE}/api/users/employers`, { headers: { ...authHeaders() } });
     if (!res.ok) throw new Error('failed to fetch employers');
     return res.json();
 }

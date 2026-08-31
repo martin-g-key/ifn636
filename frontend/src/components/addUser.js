@@ -28,7 +28,7 @@ export default function addUser({ onAdd }) {
             return;
         }
 
-        onAdd(name, role, role === 'Employee' ? employer : null ); 
+        onAdd(name, password, role, role === 'Employee' ? employer : null ); 
         setUsername('');
         setPassword('')
         setRole('Employee');
@@ -61,6 +61,7 @@ export default function addUser({ onAdd }) {
             {/* employer drop down only for employees */}
             {role === 'Employee' && (
                 <select value={employer} onChange={(e) => setEmployer(e.target.value)}>
+                    <option value="">Choose employer</option>
                     {employers.map((emp) => (
                         <option key={emp.username} value={emp.username}>{emp.username}</option>
                     ))}

@@ -14,7 +14,7 @@ export default function userList({ users }) {
                         <li key={user.id}>
                             {user.username} | {user.role}
                             {user.role === 'Employee' && user.employer_username
-                                ? ` (employee: ${user.employer_username})`
+                                ? ` | Employer: ${user.employer_username}`
                                 : ''
                             }
                         </li>
