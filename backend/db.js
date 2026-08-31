@@ -32,6 +32,7 @@ async function initDB() {
             username    TEXT NOT NULL,
             password_hash   TEXT NOT NULL,
             role    TEXT NOT NULL CHECK (role IN ('employer', 'employee')),
+            employer_username TEXT NOT NULL REFERENCES users(username), 
             created_at  TEXT NOT NULL DEFAULT (datetime('now'))
         )
     `);
@@ -54,8 +55,8 @@ async function seedEmployer(db) {
         const test_username = process.env.ADMIN_USERNAME;
 
         await db.run(
-            'INSERT INTO users (username, password_hash, role) VALUES (?,?,?)', 
-            test_username, hash, 'employer'
+            'INSERT INTO users (username, password_hash, role, employer_username) VALUES (?,?,?,?)', 
+            test_username, hash, 'employer', test_username
         );
         console.log('Seeded admin acct')
     }

@@ -11,7 +11,13 @@ export default function userList({ users }) {
             ) : (
                 <ul>
                     {users.map((user) => (
-                        <li key={user.id}>{user.username}</li>
+                        <li key={user.id}>
+                            {user.username} | {user.role}
+                            {user.role === 'employee' && user.employer_username
+                                ? ` (employee: ${user.employer_username})`
+                                : ''
+                            }
+                        </li>
                     ))}
                 </ul>
             )}

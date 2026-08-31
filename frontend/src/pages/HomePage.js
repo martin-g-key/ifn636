@@ -5,7 +5,7 @@ import React, { useState, useEffect } from 'react';
 // Import componenets and API calls
 import UserList from '../components/userList';
 import AddUser from '../components/addUser';
-import { fetchUsers, createUsers } from '../api';
+import { fetchUsers, createUser } from '../api';
 
 
 export default function HomePage() {
@@ -20,9 +20,9 @@ export default function HomePage() {
             .finally(() => setLoading(false));
     }, []);
 
-    const handleAdd = async (username) => {
+    const handleAdd = async (username, role, employer_username) => {
         try {
-            const created = await createUsers(username);
+            const created = await createUser(username, role, employer_username);
             // show new user record
             setUsers((prev) => [created, ...prev]); 
         } catch (err) {
