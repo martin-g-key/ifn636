@@ -32,7 +32,7 @@ async function initDB() {
             username    TEXT NOT NULL,
             password_hash   TEXT NOT NULL,
             role    TEXT NOT NULL CHECK (role IN ('Employer', 'Employee')),
-            employer_username TEXT REFERENCES users(username), 
+            employer_username TEXT NOT NULL REFERENCES users(username), 
             created_at  TEXT NOT NULL DEFAULT (datetime('now'))
         )
     `);
@@ -46,9 +46,9 @@ async function initDB() {
 
 // run inside initDB after table is created. 
 async function seedEmployer(db) {
-    const test_username = process.env.ADMIN_USERNAME;
+    const adminUsername = process.env.ADMIN_USERNAME;
 
-    const existing = await db.get('SELECT id FROM users WHERE username = ?', 'test_username');
+    const existing = await db.get('SELECT id FROM users WHERE username = ?', adminUsername);
     if (!existing) {
 
         // use an admin password and username from .env
@@ -57,7 +57,7 @@ async function seedEmployer(db) {
 
         await db.run(
             'INSERT INTO users (username, password_hash, role, employer_username) VALUES (?,?,?,?)', 
-            test_username, hash, 'Employer', test_username
+            adminUsername, hash, 'Employer', test_username
         );
         console.log('Seeded admin acct')
     }

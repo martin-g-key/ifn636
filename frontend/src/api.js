@@ -16,11 +16,11 @@ export async function fetchUsers() {
 }
 
 // createUser
-export async function createUser(username, role, employer_username) {
+export async function createUser(username, password, role, employer_username) {
     const res = await fetch(`${API_BASE}/api/users`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...authHeaders() }, //changed to support authentication
-        body: JSON.stringify({ username, role, employer_username }),
+        body: JSON.stringify({ username, password, role, employer_username }),
     });
     if (!res.ok) throw new Error('Failed to create user');
     return res.json();
@@ -28,7 +28,7 @@ export async function createUser(username, role, employer_username) {
 
 // fetchEmployers
 export async function fetchEmployers() {
-    const res = await fetch(`${API_BASE}/api/employeers`, { headers: { ...authHeaders() } });
+    const res = await fetch(`${API_BASE}/api/users/employeers`, { headers: { ...authHeaders() } });
     if (!res.ok) throw new Error('failed to fetch employers');
     return res.json();
 }

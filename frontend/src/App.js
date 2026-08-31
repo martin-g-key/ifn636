@@ -25,7 +25,7 @@ export default function App() {
         <BrowserRouter>
             <nav style = {{ marginBottom: '1rem' }}> 
                 <Link to="/">Home</Link> | <Link to="/trips">Trips</Link>{' '}
-                {role === 'employer' && <span>| (employer) </span>}
+                {role === 'Employer' && <span>| (employer) </span>}
                 | <button onClick={handleLogout}>Log out</button>
             </nav>
             <Routes>

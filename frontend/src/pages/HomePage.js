@@ -20,9 +20,9 @@ export default function HomePage() {
             .finally(() => setLoading(false));
     }, []);
 
-    const handleAdd = async (username, role, employer_username) => {
+    const handleAdd = async (username, password, role, employer_username) => {
         try {
-            const created = await createUser(username, role, employer_username);
+            const created = await createUser(username, password, role, employer_username);
             // show new user record
             setUsers((prev) => [created, ...prev]); 
         } catch (err) {

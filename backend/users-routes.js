@@ -17,8 +17,8 @@ router.get('/', async (req, res, next) => {
     }
 });
 
-// GET /api/employers --> for dropdown
-router.get('/api/employers', async (req, res, next) => {
+// GET /employers --> for dropdown
+router.get('/employers', async (req, res, next) => {
     try{
         const db = await getDB();
         const rows = await db.all(
@@ -34,12 +34,16 @@ router.get('/api/employers', async (req, res, next) => {
 // POST / --> add a record to users table
 router.post('/', async (req, res, next) => {
     try {
-        const { username } = req.body;
-        const { password } = req.body;
+        const { username, password, role, employer_username } = req.body;
 
         // check username 
         if (!username || typeof username !== 'string' || username.trim() === '' ) {
             return res.status(400).json({ error: 'Provide valid username'});
+        }
+
+        // check password
+        if (!password || typeof password != 'string' || password.trim() == '') {
+            return res.status(400).json({ error: 'Provide a valid password'})
         }
 
         // check role
@@ -51,26 +55,27 @@ router.post('/', async (req, res, next) => {
         let employerValue = null;
 
         // check employer_username is valid and save it as employerValue
-        if (role === 'employee') {
-            if (!employer_name) {
+        if (role === 'Employee') {
+            if (!employer_username) {
                 return res.status(400).json({ error: 'an employee must have an employer'});
             }
-
             const emp = await db.get(
-                "SELECT username FROM users WHERE username = ? AND role = 'employer'", employer_username
+                "SELECT username FROM users WHERE username = ? AND role = 'Employer'", employer_username
             );
-
             if(!emp) {
-                return res.status(400).json({ error: "employer must be an existing user who has a role of 'employer'"})
+                return res.status(400).json({ error: "employer must be an existing user who has a role of 'employer'"});
             } 
             employerValue = employer_username; 
         }
 
+        const password_hash = await bcrypt.hash(password, 10);
+
         const result = await db.run(
-            "INSERT INTO users (username, role, employer_username) VALUES (?, ?, ?)",
-            username.trim(), role, employerValue
+            "INSERT INTO users (username, password_hash, role, employer_username) VALUES (?, ?, ?, ?)",
+            username.trim(), password_hash, role, employerValue
         );
 
+        // make sure password or password_hash is not included
         const created = await db.get(
             "SELECT id, username, role, employer_username FROM users WHERE id = ?",
             result.lastID

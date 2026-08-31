@@ -5,7 +5,7 @@ import { fetchEmployers } from '../api';
 
 export default function addUser({ onAdd }) {
     const [username, setUsername] = useState('');
-    const [role, setRole] = useState('employee');
+    const [role, setRole] = useState('Employee');
     const [employer, setEmployer] = useState('');
     const [employers, setEmployers] = useState([]);
     const [password, setPassword] = useState('');
@@ -22,7 +22,8 @@ export default function addUser({ onAdd }) {
         setError('');
         const name = username.trim();
         if (name === '') return;
-        if (role === 'Employee' && 'Employer' =='') {
+        if (password === '') {setError('please enter a password'); return; }
+        if (role === 'Employee' && employer === '') {
             setError('please choose and employer for this employee')
             return;
         }
