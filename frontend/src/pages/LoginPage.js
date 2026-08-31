@@ -14,9 +14,9 @@ export default function LoginPage({ onLogin }) {
 
         try {
             const { token, user } = await login(username, password);
-            localStorage.setItem('token',token); // check this
-            localStorage.setItem('role', user.role); // check this
-            onLogin(user)
+            sessionStorage.setItem('token', token); // check this
+            sessionStorage.setItem('role', user.role); // check this
+            onLogin(user);
         } catch(err) {
             setError('invalid password or username')
         }
@@ -31,7 +31,8 @@ export default function LoginPage({ onLogin }) {
                 <div>
                     <input type="text" value={username} placeholder="Username" 
                         onChange={(e) => setUsername(e.target.value)} />
-
+                </div>
+                <div>
                     <input type="text" value={password} placeholder="Password"
                         onChange={(e) => setPassword(e.target.value)} />
                 </div>

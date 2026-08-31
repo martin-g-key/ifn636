@@ -4,7 +4,7 @@ const API_BASE = process.env.API_BASE || 'http://localhost:3001';
 // authHeaders
 // create function to read saved token and build Authorisation header
 function authHeaders() {
-    const token = localStorage.getItem('token')
+    const token = sessionStorage.getItem('token');
     return token ? { Authorization: 'Bearer ' + token } : {};
 }
 

@@ -18,11 +18,11 @@ router.get('/', async (req, res, next) => {
 });
 
 // GET /api/employers --> for dropdown
-router.get('/employers', async (req, res, next) => {
+router.get('/api/employers', async (req, res, next) => {
     try{
         const db = await getDB();
         const rows = await db.all(
-            "SELECT username FROM users WHERE role = 'employer' ORDER BY username"
+            "SELECT username FROM users WHERE role = 'Employer' ORDER BY username"
         );
         res.json(rows);
     } catch (err) { 
