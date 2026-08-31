@@ -45,3 +45,25 @@ export async function login(username,password) {
     return res.json();
 }
 
+// updateUser
+export async function updateUser(id, fields) {
+    const res = await fetch(`${API_BASE}/api/users/${id}`, {
+        method: 'PUT',
+        headers: {'Content-Type': 'application/json', ...authHeaders() },
+        body: JSON.stringify(fields),
+    });
+    if (!res.ok) throw new Error('failed to update user');
+    return res.json();
+}
+
+
+// deleteUser
+export async function deleteUser(id) {
+    const res = await fetch(`${API_BASE}/api/users/${id}`, {
+        method: 'DELETE',
+        headers: { ...authHeaders() },
+    });
+    if (!res.ok) throw new Error('Failed to delete uesr');
+    return true;
+}
+

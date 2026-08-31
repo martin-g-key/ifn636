@@ -43,7 +43,7 @@ router.post('/', async (req, res, next) => {
         }
 
         // check password
-        if (!password || typeof password != 'string' || password.trim() == '') {
+        if (!password || typeof password !== 'string' || password.trim() == '') {
             return res.status(400).json({ error: 'Provide a valid password'})
         }
 
@@ -83,6 +83,69 @@ router.post('/', async (req, res, next) => {
         );
 
         res.status(201).json(created);
+    } catch (err) { next(err); }
+});
+
+// PUT /:id --> update a user
+router.put('/:id', async (req, res, next) => {
+    try {
+        const id = Number(req.params.id);
+        if (!Number.isInteger(id)) return res.status(400).json({ error: 'invalid user id'});
+
+        const { username, password, role, employer_username } = req.body
+
+        if (!username || typeof username !== 'string' || username.trim() === '') {
+            return res.status(400).json({ error: 'provide valid username'})
+        }
+        if (role !== 'Employer' && role !== 'Employee') {
+            return res.status(400).json({ error: "role must be Employee or Employer"});
+        }
+
+        // begin data management
+        const db = await getDB();
+
+        const existing = await db.get("SELECT id FROM users WHERE id = ?", id);
+        if (!existing) return res.status(404).json({ error: 'user not found'});
+
+        let employerValue = null;
+        if (role === 'Employee') {
+            if (!employer_username) return res.status(404).json({ error: 'employer should have employee'});
+            const emp = await db.get(
+                "SELECT username FROM users WHERE username = ? AND role = 'Employer'", employer_username
+            );
+            if (!emp) return res.status(400).json({ error: "employer must be already exist with an employer"});
+            employerValue = employer_username;
+        }
+
+        // TODO : password updates
+
+        // for messages
+        const updated = await db.get(
+            "SELECT id, username, role, employer_username FROM users WHERE id = ?", id 
+        );
+        res.json(updated);
+
+    } catch (err) { next(err); }
+});
+
+
+// DELETE /:id --> remove usr
+router.delete('/:id', async (req, res, next) => {
+    try {
+        const id = Number(req.params.id);
+
+        // check that a user number is used
+        if (!Number.isInteger(id)) return res.status(400).json({ error: "invalid user id"});
+
+        // user cannot delete itself
+        if ( id === req.user.sub) return res.status(400).json({error: 'user cannot delete own account'});
+
+        // begin data management
+        const db = await getDB();
+        const result = await db.run("DELETE FROM users WHERE id = ?", id);
+        if (result.changes === 0 ) return res.status(404).json({ error: "user not found"});
+        res.status(204).end();
+
     } catch (err) { next(err); }
 });
 

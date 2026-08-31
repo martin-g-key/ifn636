@@ -5,7 +5,7 @@ import React, { useState, useEffect } from 'react';
 // Import componenets and API calls
 import UserList from '../components/userList';
 import AddUser from '../components/addUser';
-import { fetchUsers, createUser } from '../api';
+import { fetchUsers, createUser, updateUser, deleteUser } from '../api';
 
 
 export default function HomePage() {
@@ -33,6 +33,22 @@ export default function HomePage() {
             setError(err.message);
         }
     };
+
+    const handleUpdate = async (id, fields) => {
+        try {
+            const updated = await updateUser(id, fields);
+            setUsers((prev) => prev.map((u) => (u.id === id ? updated : u)));
+
+        } catch (err) { setError(err.message); }
+    }
+
+    const handleDelete = async (id) => {
+        if (!window.confirm('Delete this user? ')) return;
+        try {
+            await deleteUser(id);
+            setUsers((prev) => prev.filter((u) => u.id !== id));
+        } catch (err) { setError(err.message); }
+    }
 
     // Employee view (no user management)
     if (!isEmployer) {
@@ -63,7 +79,7 @@ export default function HomePage() {
                 <AddUser onAdd={handleAdd} /> 
             </div>
             <div>
-                <UserList users={users} />
+                <UserList users={users} onUpdate={handleUpdate} onDelete={handleDelete} />
             </div>
         </div>
     );
