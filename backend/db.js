@@ -1,4 +1,6 @@
 // set up a database for the application using sqllite
+require('dotenv').config();
+
 const path = require('path');
 const sqlite3 = require('sqlite3'); // database 
 const { open } = require('sqlite'); // wrapper
@@ -46,13 +48,14 @@ async function seedEmployer(db) {
     const existing = await db.get('SELECT id FROM users WHERE username = ?', 'employer');
     if (!existing) {
 
-        // use an admin password from .env
+        // use an admin password and username from .env
         // use a standaard salt factor of 10 
-        const hash = await bcrypt.hash(process.env.ADMIN_PASSWORD, 10) 
-        
+        const hash = await bcrypt.hash(process.env.ADMIN_PASSWORD, 10);
+        const test_username = process.env.ADMIN_USERNAME;
+
         await db.run(
             'INSERT INTO users (username, password_hash, role) VALUES (?,?,?)', 
-            'Martin', hash, 'employer'
+            test_username, hash, 'employer'
         );
         console.log('Seeded admin acct')
     }
