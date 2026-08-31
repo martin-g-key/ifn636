@@ -57,7 +57,7 @@ async function seedEmployer(db) {
 
         await db.run(
             'INSERT INTO users (username, password_hash, role, employer_username) VALUES (?,?,?,?)', 
-            adminUsername, hash, 'Employer', test_username
+            adminUsername, hash, 'Employer', adminUsername
         );
         console.log('Seeded admin acct')
     }

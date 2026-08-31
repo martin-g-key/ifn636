@@ -9,7 +9,7 @@ const path = require('path');
 const express = require('express');
 const cors = require ('cors');
 // modules -- authentication
-const {login, requireAuth } = require('./auth');
+const {login, requireAuth, requireRole } = require('./auth');
 
 // app functions
 const { initDB } = require('./db');
@@ -64,7 +64,7 @@ if(require.main === module) {
 // authentication routes
 app.post('/api/login', login);
 
-app.use('/api/users', requireAuth, usersRouter);
+app.use('/api/users', requireAuth, requireRole('Employer'), usersRouter);
 
 
 module.exports = app;

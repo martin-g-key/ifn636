@@ -1,6 +1,7 @@
 // router using express module
 
 const express = require('express');
+const bcrypt = require('bcryptjs');  
 const { getDB } = require('./db');
 
 const router = express.Router();
@@ -47,7 +48,7 @@ router.post('/', async (req, res, next) => {
         }
 
         // check role
-        if (role != 'employer' && role !== 'employee') {
+        if (role != 'Employer' && role !== 'Employee') {
             return res.status(400).json({ error: "role must be 'employer' or 'employee'"});
         }
 
