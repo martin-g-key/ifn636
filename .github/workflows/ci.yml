@@ -1,4 +1,3 @@
-
 name: Backend CI
 
 on:
@@ -9,10 +8,10 @@ on:
 jobs:
   test:
     name: Run Tests
-    runs-on: self-hosted 
+    runs-on: self-hosted
+    strategy:
       matrix:
         node-version: [22]
-
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
@@ -22,16 +21,8 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
 
-      - name: Check Env Secrets
-        env:
-          JWT_SECRET: ${{ secrets.JWT_SECRET }}
-          PORT: ${{ secrets.PORT }}
-        run: |
-          echo "JWT_SECRET present: ${JWT_SECRET:+yes}"
-          echo "PORT: $PORT"
-
       - name: Stop Running Services
-        run: pm2 stop all || true 
+        run: pm2 stop all || true
 
       - name: Install Backend Dependencies
         working-directory: ./backend
@@ -48,7 +39,7 @@ jobs:
 
       - name: Run Backend Tests
         working-directory: ./backend
-        run: npm test 
+        run: npm test
 
       - name: Write Production .env
         working-directory: ./backend
