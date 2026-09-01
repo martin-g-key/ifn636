@@ -1,0 +1,60 @@
+
+name: Backend CI
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  test:
+    name: Run Tests
+    runs-on: self-hosted 
+      matrix:
+        node-version: [22]
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Check Env Secrets
+        env:
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          PORT: ${{ secrets.PORT }}
+        run: |
+          echo "JWT_SECRET present: ${JWT_SECRET:+yes}"
+          echo "PORT: $PORT"
+
+      - name: Stop Running Services
+        run: pm2 stop all || true 
+
+      - name: Install Backend Dependencies
+        working-directory: ./backend
+        run: npm ci
+
+      - name: Install Frontend Dependencies and Build
+        working-directory: ./frontend
+        env:
+          API_BASE: http://54.253.93.151:5001
+        run: |
+          npm ci
+          rm -rf ./dist
+          npm run build
+
+      - name: Run Backend Tests
+        working-directory: ./backend
+        run: npm test 
+
+      - name: Write Production .env
+        working-directory: ./backend
+        run: echo "${{ secrets.PROD }}" > .env
+
+      - name: Restart Services
+        run: |
+          pm2 start all || true
+          pm2 restart all
