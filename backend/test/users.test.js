@@ -4,7 +4,7 @@
 process.env.DB_PATH = ':memory:';
 process.env.JWT_SECRET = 'test_JWT_SECRET';
 process.env.ADMIN_USERNAME = 'admin';
-process.env.ADMIN_PROJECT = 'admin_123';
+process.env.ADMIN_PASSWORD = 'admin_123';
 
 
 const { expect } = require('chai');
