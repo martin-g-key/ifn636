@@ -42,11 +42,7 @@ app.get('/api/health', (req, res) => {
     res.json({ status: 'ok' })
 });
 
-// error handling
-app.use((err, req, res, next) => {
-    console.error(err);
-    res.status(500).json({ error: 'internal server error' });
-});
+
 
 // start up 
 // check that the data sub directory exists before running sqlite
@@ -66,5 +62,11 @@ app.post('/api/login', login);
 
 app.use('/api/users', requireAuth, requireRole('Employer'), usersRouter);
 
+
+// error handling
+app.use((err, req, res, next) => {
+    console.error(err);
+    res.status(500).json({ error: 'internal server error' });
+});
 
 module.exports = app;
