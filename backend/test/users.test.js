@@ -31,7 +31,7 @@ describe('Users API', () => {
 
     // test 2 -- token
     it('GET /api/users without a token is rejected with 401. ', async () => {
-        const res = await request(app).get('./api/users');
+        const res = await request(app).get('/api/users');
         expect(res.status).to.equal(401);
     });
 
@@ -60,7 +60,7 @@ describe('Users API', () => {
     // test 5 -- reject an auth attempt without a pasword
     it('POST /api/users (authed), rejects a missing password with a 400 message', async () => {
         const res = await request(app)
-            .post('api/users')
+            .post('/api/users')
             .set('Authorization', `Bearer ${token}`)
             .send({ username: 'Jean', role: 'Employer' });
         expect(res.status).to.equal(400);
