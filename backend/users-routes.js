@@ -117,7 +117,20 @@ router.put('/:id', async (req, res, next) => {
             employerValue = employer_username;
         }
 
-        // TODO : password updates
+        if (password) {
+            const password_hash = await bcrypt.hash(password, 10);
+            await db.run(
+                'UPDATE users SET username = ?, password_hash = ?, role = ?, employer_username = ? WHERE id = ?',
+                username.trim(), password_hash, role, employerValue, id
+            );
+        } else {
+            await db.run(
+                'UPDATE users SET username = ?, role = ?, employer_username = ? WHERE id = ?', 
+                username.trim(), role, employerValue, id
+            );
+        }
+
+
 
         // for messages
         const updated = await db.get(
