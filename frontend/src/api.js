@@ -1,5 +1,5 @@
 // endpoint for API calls between frontend to backend
-const API_BASE = process.env.API_BASE || 'http://localhost:3001';
+const API_BASE = process.env.API_BASE;
 
 // authHeaders
 // create function to read saved token and build Authorisation header

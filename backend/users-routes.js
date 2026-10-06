@@ -2,16 +2,21 @@
 
 const express = require('express');
 const bcrypt = require('bcryptjs');  
-const { getDB } = require('./db');
+const mongoose = require('mongoose');
+const UsersModel = require('./models/Users');
 
 const router = express.Router();
+
+// id validation check
+const isValidId = (id) => mongoose.Types.ObjectId.isValid(id);
+
+
 
 // GET /  --> all data from users based on username
 router.get('/', async (req, res, next) => {
     try {
         // check user data
-        const db = await getDB();
-        const users = await db.all('SELECT * FROM users ORDER BY id DESC');
+        const users = await UsersModel.find().sort({ createdAt: -1 });
         res.json(users);
     } catch (err) {
         next(err); 
@@ -21,10 +26,7 @@ router.get('/', async (req, res, next) => {
 // GET /employers --> for dropdown
 router.get('/employers', async (req, res, next) => {
     try{
-        const db = await getDB();
-        const rows = await db.all(
-            "SELECT username FROM users WHERE role = 'Employer' ORDER BY username"
-        );
+        const rows = await UsersModel.find({ role: 'Employer' }).select('username').sort({ username: 1 });
         res.json(rows);
     } catch (err) { 
         next(err)
@@ -43,16 +45,20 @@ router.post('/', async (req, res, next) => {
         }
 
         // check password
-        if (!password || typeof password !== 'string' || password.trim() == '') {
+        if (!password || typeof password !== 'string' || password.trim() === '') {
             return res.status(400).json({ error: 'Provide a valid password'})
         }
 
         // check role
-        if (role != 'Employer' && role !== 'Employee') {
-            return res.status(400).json({ error: "role must be 'employer' or 'employee'"});
+        if (role !== 'Employer' && role !== 'Employee') {
+            return res.status(400).json({ error: "role must be 'Employer' or 'Employee'"});
         }
 
-        const db = await getDB();
+        // check if username already exists
+        if (await UsersModel.exists({ username: username.trim() })) {
+            return res.status(409).json({ error: 'username already taken' });
+        }
+
         let employerValue = null;
 
         // check employer_username is valid and save it as employerValue
@@ -60,9 +66,7 @@ router.post('/', async (req, res, next) => {
             if (!employer_username) {
                 return res.status(400).json({ error: 'an employee must have an employer'});
             }
-            const emp = await db.get(
-                "SELECT username FROM users WHERE username = ? AND role = 'Employer'", employer_username
-            );
+            const emp = await UsersModel.findOne({ username: employer_username, role: 'Employer' });
             if(!emp) {
                 return res.status(400).json({ error: "employer must be an existing user who has a role of 'employer'"});
             } 
@@ -70,17 +74,12 @@ router.post('/', async (req, res, next) => {
         }
 
         const password_hash = await bcrypt.hash(password, 10);
-
-        const result = await db.run(
-            "INSERT INTO users (username, password_hash, role, employer_username) VALUES (?, ?, ?, ?)",
-            username.trim(), password_hash, role, employerValue
-        );
-
-        // make sure password or password_hash is not included
-        const created = await db.get(
-            "SELECT id, username, role, employer_username FROM users WHERE id = ?",
-            result.lastID
-        );
+        const created = await UsersModel.create({
+            username: username.trim(),
+            password_hash,
+            role,
+            employer_username: employerValue,
+        });
 
         res.status(201).json(created);
     } catch (err) { next(err); }
@@ -89,55 +88,36 @@ router.post('/', async (req, res, next) => {
 // PUT /:id --> update a user
 router.put('/:id', async (req, res, next) => {
     try {
-        const id = Number(req.params.id);
-        if (!Number.isInteger(id)) return res.status(400).json({ error: 'invalid user id'});
+        const { id } = req.params;
+        if (!isValidId(id)) return res.status(400).json({ error: 'invalid user id' });
 
-        const { username, password, role, employer_username } = req.body
-
+        const { username, password, role, employer_username } = req.body;
         if (!username || typeof username !== 'string' || username.trim() === '') {
-            return res.status(400).json({ error: 'provide valid username'})
+            return res.status(400).json({ error: 'provide valid username' });
         }
         if (role !== 'Employer' && role !== 'Employee') {
-            return res.status(400).json({ error: "role must be Employee or Employer"});
+            return res.status(400).json({ error: 'role must be Employee or Employer' });
         }
 
-        // begin data management
-        const db = await getDB();
-
-        const existing = await db.get("SELECT id FROM users WHERE id = ?", id);
-        if (!existing) return res.status(404).json({ error: 'user not found'});
+        const user = await UsersModel.findById(id);
+        if (!user) return res.status(404).json({ error: 'user not found' });
 
         let employerValue = null;
         if (role === 'Employee') {
-            if (!employer_username) return res.status(404).json({ error: 'employer should have employee'});
-            const emp = await db.get(
-                "SELECT username FROM users WHERE username = ? AND role = 'Employer'", employer_username
-            );
-            if (!emp) return res.status(400).json({ error: "employer must be already exist with an employer"});
+            if (!employer_username) return res.status(400).json({ error: 'an employee must have an employer' });
+            const emp = await UsersModel.findOne({ username: employer_username, role: 'Employer' });
+            if (!emp) return res.status(400).json({ error: "employer must be an existing user with role 'Employer'" });
             employerValue = employer_username;
         }
 
-        if (password) {
-            const password_hash = await bcrypt.hash(password, 10);
-            await db.run(
-                'UPDATE users SET username = ?, password_hash = ?, role = ?, employer_username = ? WHERE id = ?',
-                username.trim(), password_hash, role, employerValue, id
-            );
-        } else {
-            await db.run(
-                'UPDATE users SET username = ?, role = ?, employer_username = ? WHERE id = ?', 
-                username.trim(), role, employerValue, id
-            );
-        }
+        // change the fields on the document, then save it
+        user.username = username.trim();
+        user.role = role;
+        user.employer_username = employerValue;
+        if (password) user.password_hash = await bcrypt.hash(password, 10);
+        await user.save();
 
-
-
-        // for messages
-        const updated = await db.get(
-            "SELECT id, username, role, employer_username FROM users WHERE id = ?", id 
-        );
-        res.json(updated);
-
+        res.json(user);
     } catch (err) { next(err); }
 });
 
@@ -145,22 +125,18 @@ router.put('/:id', async (req, res, next) => {
 // DELETE /:id --> remove usr
 router.delete('/:id', async (req, res, next) => {
     try {
-        const id = Number(req.params.id);
+        const { id } = req.params;
+        if (!isValidId(id)) return res.status(400).json({ error: 'invalid user id' });
 
-        // check that a user number is used
-        if (!Number.isInteger(id)) return res.status(400).json({ error: "invalid user id"});
+        // user cannot delete itself (sub is the logged-in user's id, from the JWT)
+        if (id === req.user.sub) return res.status(400).json({ error: 'user cannot delete own account' });
 
-        // user cannot delete itself
-        if ( id === req.user.sub) return res.status(400).json({error: 'user cannot delete own account'});
-
-        // begin data management
-        const db = await getDB();
-        const result = await db.run("DELETE FROM users WHERE id = ?", id);
-        if (result.changes === 0 ) return res.status(404).json({ error: "user not found"});
+        const deleted = await UsersModel.findByIdAndDelete(id);
+        if (!deleted) return res.status(404).json({ error: 'user not found' });
         res.status(204).end();
-
     } catch (err) { next(err); }
 });
+
 
 
 module.exports = router; 
