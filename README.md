@@ -36,7 +36,9 @@ git pull origin main
 ### Deployment Process 
 **Pre-reqs** 
 
-Read and write access to https://github.com/martin-g-key/ifn636 will be enough to deploy changes to the production instance/s. 
+* Read and write access to https://github.com/martin-g-key/ifn636 will be enough to deploy changes to the production instance/s. 
+* Make sure that the email address used for Jira and Git Hub. Github email can be checked using the below:
+    `git config user.email`
 
 **Process** 
 1. Push to main  
@@ -47,8 +49,6 @@ Read and write access to https://github.com/martin-g-key/ifn636 will be enough t
 
 
 ## Tech Stack 
-
-## Tech Stack
 
 | Layer | Technology | Role |
 | :--- | :--- | :--- |
