@@ -38,7 +38,7 @@ module.exports = {
         //
         new webpack.DefinePlugin({
             'process.env.API_BASE': JSON.stringify(
-                process.env.API_BASE || 'http://localhost:3001'
+                process.env.API_BASE || 'http://localhost:5001'
             ),
         }),
     ],

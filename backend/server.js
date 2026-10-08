@@ -4,20 +4,20 @@
 require('dotenv').config(); 
 
 // modules 
-const fs = require('fs');
-const path = require('path');
+//const fs = require('fs');
+//const path = require('path');
 const express = require('express');
 const cors = require ('cors');
 // modules -- authentication
 const {login, requireAuth, requireRole } = require('./auth');
 
-// app functions
-const { initDB } = require('./db');
+// mongoDB connection
+const { connectDB } = require('./config/db');
 const usersRouter = require('./users-routes');
 
 // start up express
 const app = express();
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 5001;
 
 app.use((req, res, next) => {
     console.log(`${req.method} ${req.url}`);
@@ -32,6 +32,12 @@ app.use(express.json());
 
 
 // ------ routes ------ 
+// authentication routes
+app.post('/api/login', login);
+app.use('/api/users', requireAuth, requireRole('Employer'), usersRouter);
+
+
+
 // routes -- hello world
 app.get('/', (req, res) => {
     res.send("API is running. Try /api/health or /api/users :)")
@@ -43,24 +49,16 @@ app.get('/api/health', (req, res) => {
 });
 
 
-
-// start up 
-// check that the data sub directory exists before running sqlite
-fs.mkdirSync(path.join(__dirname, 'data'), { recursive: true});
-
-// 
-if(require.main === module) {
-    initDB().then(() => {
-        app.listen(PORT, () => {
-            console.log(`backend listening on http://localhost:${PORT}`);
-        });
-    });
+// Mongo DB connection
+if (require.main === module) {
+    connectDB();
+    
+    // if the file is run directly, start the server
+    const PORT = process.env.PORT || 5001;
+    app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 }
 
-// authentication routes
-app.post('/api/login', login);
 
-app.use('/api/users', requireAuth, requireRole('Employer'), usersRouter);
 
 
 // error handling

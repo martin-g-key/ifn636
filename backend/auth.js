@@ -1,13 +1,9 @@
 // define routes to support authentication feature
 
-// ensure .env is loaded in memory
-require('dotenv').config();
-
-
 // imports
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
-const { getDB } = require('./db');
+const UsersModel = require('./models/Users'); 
 
 const SECRET = process.env.JWT_SECRET;
 
@@ -16,9 +12,8 @@ const SECRET = process.env.JWT_SECRET;
 async function login(req, res, next) {
     try {
         const { username, password } = req.body
-        const db = await getDB();
-        const user = await db.get('SELECT * FROM users WHERE username = ?', username)
-    
+        const user = await UsersModel.findOne({ username });    
+        
         // are the credentials corect? If not, send a message
         if (!user || !(await bcrypt.compare(password, user.password_hash))) {
             return res.status(401).json({ error: "Invalid username and/or password. Please try again."});

@@ -1,24 +1,33 @@
 // Testing using Mocha, Chai, Supertest
 
 // create test inputs that would otherwise live in .env
-process.env.DB_PATH = ':memory:';
 process.env.JWT_SECRET = 'test_JWT_SECRET';
 process.env.ADMIN_USERNAME = 'admin';
 process.env.ADMIN_PASSWORD = 'admin_123';
-
-
+ 
 const { expect } = require('chai');
 const request = require('supertest');
 const sinon = require('sinon');
-
+const mongoose = require('mongoose');
+const { MongoMemoryServer } = require('mongodb-memory-server');
+ 
 const app = require('../server');
-const { initDB } = require('../db');
+const { seedEmployer } = require('../config/db');
 
 describe('Users API', () => {
     let token;
+    let mongo;
 
-    before(async () => {
-        await initDB(); // create db in test database
+    before(async function () {
+        this.timeout(120000); // first run downloads a MongoDB binary
+        mongo = await MongoMemoryServer.create();
+        await mongoose.connect(mongo.getUri());
+        await seedEmployer();
+    });
+
+    after(async () => {
+        await mongoose.disconnect();
+        await mongo.stop();
     });
 
 
@@ -58,12 +67,21 @@ describe('Users API', () => {
     });
 
     // test 5 -- reject an auth attempt without a pasword
-    it('POST /api/users (authed), rejects a missing password with a 400 message', async () => {
+    it('POST /api/users (authed) rejects a missing password with 400', async () => {
         const res = await request(app)
             .post('/api/users')
             .set('Authorization', `Bearer ${token}`)
             .send({ username: 'Jean', role: 'Employer' });
         expect(res.status).to.equal(400);
+    });
+
+    // test 6 -- duplicate usernames rejeceted 
+    it('POST /api/users (authed) rejects a duplicate username with 409', async () => {
+        const res = await request(app)
+            .post('/api/users')
+            .set('Authorization', `Bearer ${token}`)
+            .send({ username: 'Vida', password: 'pw456', role: 'Employer' });
+        expect(res.status).to.equal(409);
     });
 
 
