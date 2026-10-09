@@ -58,7 +58,7 @@ const expenseSchema = new mongoose.Schema(
     }
 );
 
-// // Verify that the User actually exists before saving.
+// Verify that the User actually exists before saving.
 expenseSchema.pre('validate', async function () {
     if (!this.user_id) return;
 
