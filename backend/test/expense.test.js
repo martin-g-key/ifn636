@@ -1,0 +1,99 @@
+const { expect } = require('chai');
+const mongoose = require('mongoose');
+const { MongoMemoryServer } = require('mongodb-memory-server');
+
+const User = require('../models/Users');
+const Expense = require('../models/Expense');
+
+describe('Expense model', function () {
+    let mongo;
+    let user;
+
+    before(async function () {
+        this.timeout(120000); // Download MongoDB
+        mongo = await MongoMemoryServer.create();
+        await mongoose.connect(mongo.getUri());
+
+        user = await User.create({
+            username: 'expense-test-user',
+            password_hash: 'test-hash',
+            role: 'Employee',
+            employer_username: 'test-employer',
+        });
+    });
+
+    after(async () => {
+        await mongoose.disconnect();
+        await mongo.stop();
+    });
+
+    async function expectValidationFailure(expense) {
+        try {
+            await expense.validate();
+        } catch (error) {
+            expect(error).to.be.instanceOf(mongoose.Error.ValidationError);
+            return;
+        }
+
+        expect.fail('Expected expense validation to fail');
+    }
+
+    it('creates a valid expense and applies defaults and timestamps', async () => {
+        const expense = await Expense.create({
+            user_id: user._id,
+            expense_date: new Date('2026-05-01'),
+            amount: 12.35,
+            purpose: 'Work',
+            fin_year: '2025/26',
+        });
+
+        expect(expense.status).to.equal('Submitted');
+        expect(expense.created_at).to.be.instanceOf(Date);
+        expect(expense.updated_at).to.be.instanceOf(Date);
+
+        const json = expense.toJSON();
+        expect(json.expense_id).to.equal(expense._id.toString());
+        expect(json).to.not.have.property('_id');
+    });
+
+    it('rejects a negative amount', async () => {
+        await expectValidationFailure(new Expense({
+            user_id: user._id,
+            expense_date: new Date('2026-05-01'),
+            amount: -1,
+            purpose: 'Work',
+            fin_year: '2025/26',
+        }));
+    });
+
+    it('rejects a purpose outside the allowed values', async () => {
+        await expectValidationFailure(new Expense({
+            user_id: user._id,
+            expense_date: new Date('2026-05-01'),
+            amount: 12,
+            purpose: 'Travel',
+            fin_year: '2025/26',
+        }));
+    });
+
+    it('rejects a status outside the allowed values', async () => {
+        await expectValidationFailure(new Expense({
+            user_id: user._id,
+            expense_date: new Date('2026-05-01'),
+            amount: 12,
+            purpose: 'Work',
+            fin_year: '2025/26',
+            status: 'Pending',
+        }));
+    });
+
+    it('rejects a user_id that does not exist', async () => {
+        await expectValidationFailure(new Expense({
+            user_id: new mongoose.Types.ObjectId(),
+            expense_date: new Date('2026-05-01'),
+            amount: 12,
+            purpose: 'Work',
+            fin_year: '2025/26',
+        }));
+    });
+});
