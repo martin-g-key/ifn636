@@ -14,6 +14,7 @@ const {login, requireAuth, requireRole } = require('./auth');
 // mongoDB connection
 const { connectDB } = require('./config/db');
 const usersRouter = require('./users-routes');
+const tripsRouter = require('./trips-routes');
 
 // start up express
 const app = express();
@@ -30,12 +31,11 @@ app.use(cors());
 app.use(express.json());
 
 
-
 // ------ routes ------ 
 // authentication routes
 app.post('/api/login', login);
 app.use('/api/users', requireAuth, requireRole('Employer'), usersRouter);
-
+app.use('/api/trips', requireAuth, tripsRouter);
 
 
 // routes -- hello world

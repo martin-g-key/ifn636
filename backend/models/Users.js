@@ -8,7 +8,7 @@ const userSchema = new mongoose.Schema(
     employer_username: { type: String, default: null },
   },
   {
-    timestamps: true, // adds createdAt/updatedAt for you
+    timestamps: true, 
     toJSON: {
       // runs on every res.json(user)
       transform: (doc, ret) => {

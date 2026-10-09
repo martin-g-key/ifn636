@@ -67,3 +67,10 @@ export async function deleteUser(id) {
     return true;
 }
 
+
+// fetchTrips
+export async function fetchTrips() {
+    const res = await fetch(`${API_BASE}/api/trips`, {headers: {...authHeaders()}});
+    if(!res.ok) throw new Error('Failed to fetch trips');
+    return res.json();
+}

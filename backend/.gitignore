@@ -3,3 +3,4 @@ dist/
 *.db
 .env
 DS_Store
+seed-test-data.js
