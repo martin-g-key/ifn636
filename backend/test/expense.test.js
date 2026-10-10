@@ -38,18 +38,28 @@ describe('Expense model', function () {
         expect.fail('Expected expense validation to fail');
     }
 
+    it('defines a compound index for report queries', () => {
+        const indexes = Expense.schema.indexes();
+
+        expect(indexes).to.deep.include([
+            { user_id: 1, fin_year: 1 },
+            {},
+        ]);
+    });
+
     it('creates a valid expense and applies defaults and timestamps', async () => {
         const expense = await Expense.create({
             user_id: user._id,
             expense_date: new Date('2026-05-01'),
-            amount: 12.35,
-            purpose: 'Work',
-            fin_year: '2025/26',
+            amount: 1235,
+            purpose: 'Business',
         });
 
+        expect(expense.amount).to.equal(1235);
         expect(expense.status).to.equal('Submitted');
         expect(expense.created_at).to.be.instanceOf(Date);
         expect(expense.updated_at).to.be.instanceOf(Date);
+        expect(expense.fin_year).to.equal(2026);
 
         const json = expense.toJSON();
         expect(json.expense_id).to.equal(expense._id.toString());
@@ -61,8 +71,17 @@ describe('Expense model', function () {
             user_id: user._id,
             expense_date: new Date('2026-05-01'),
             amount: -1,
-            purpose: 'Work',
-            fin_year: '2025/26',
+            purpose: 'Business',
+            fin_year: 2026,
+        }));
+    });
+
+    it('rejects a fractional amount of cents', async () => {
+        await expectValidationFailure(new Expense({
+            user_id: user._id,
+            expense_date: new Date('2026-05-01'),
+            amount: 12.5,
+            purpose: 'Business',
         }));
     });
 
@@ -72,7 +91,7 @@ describe('Expense model', function () {
             expense_date: new Date('2026-05-01'),
             amount: 12,
             purpose: 'Travel',
-            fin_year: '2025/26',
+            fin_year: 2026,
         }));
     });
 
@@ -81,8 +100,8 @@ describe('Expense model', function () {
             user_id: user._id,
             expense_date: new Date('2026-05-01'),
             amount: 12,
-            purpose: 'Work',
-            fin_year: '2025/26',
+            purpose: 'Business',
+            fin_year: 2026,
             status: 'Pending',
         }));
     });
@@ -92,8 +111,22 @@ describe('Expense model', function () {
             user_id: new mongoose.Types.ObjectId(),
             expense_date: new Date('2026-05-01'),
             amount: 12,
-            purpose: 'Work',
-            fin_year: '2025/26',
+            purpose: 'Business',
+            fin_year: 2026,
         }));
+    });
+
+    it('sets fin_year from expense_date and overrides a supplied value', async () => {
+        const expense = new Expense({
+            user_id: user._id,
+            expense_date: new Date('2026-07-01'),
+            amount: 12,
+            purpose: 'Business',
+            fin_year: 2099,
+        });
+
+        await expense.validate();
+
+        expect(expense.fin_year).to.equal(2027);
     });
 });

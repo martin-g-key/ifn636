@@ -17,14 +17,18 @@ const expenseSchema = new mongoose.Schema(
             type: Number,
             required: true,
             min: 0,
+            validate: {
+                validator: Number.isInteger,
+                message: 'Amount should be an integer number of cents',
+            },
         },
         purpose: {
             type: String,
             required: true,
-            enum: ['Work', 'Private'],
+            enum: ['Business', 'Private'],
         },
         fin_year: {
-            type: String,
+            type: Number,
             required: true,
         },
         status: {
@@ -58,8 +62,17 @@ const expenseSchema = new mongoose.Schema(
     }
 );
 
-// Verify that the User actually exists before saving.
+// Supports report queries filtered by user and financial year.
+expenseSchema.index({ user_id: 1, fin_year: 1 });
+
+// Set Australian financial year from the expense date and validate that the user exists.
 expenseSchema.pre('validate', async function () {
+    if (this.expense_date instanceof Date && !Number.isNaN(this.expense_date.getTime())) {
+        const y = this.expense_date.getUTCFullYear();
+        const startYear = this.expense_date.getUTCMonth() >= 6 ? y : y - 1;
+        this.fin_year = startYear + 1;
+    }
+
     if (!this.user_id) return;
 
     const userExists = await User.exists({ _id: this.user_id });
