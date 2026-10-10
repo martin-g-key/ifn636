@@ -15,6 +15,7 @@ const {login, requireAuth, requireRole } = require('./auth');
 const { connectDB } = require('./config/db');
 const usersRouter = require('./users-routes');
 const tripsRouter = require('./trips-routes');
+const expenseReportsRouter = require('./expense-report-routes');
 
 // start up express
 const app = express();
@@ -36,6 +37,9 @@ app.use(express.json());
 app.post('/api/login', login);
 app.use('/api/users', requireAuth, requireRole('Employer'), usersRouter);
 app.use('/api/trips', requireAuth, tripsRouter);
+
+// reporting is open to both roles, the router scopes what each one sees
+app.use('/api/reports', requireAuth, expenseReportsRouter);
 
 
 // routes -- hello world
