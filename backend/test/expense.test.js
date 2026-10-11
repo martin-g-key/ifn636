@@ -59,7 +59,7 @@ describe('Expense model', function () {
         expect(expense.status).to.equal('Submitted');
         expect(expense.created_at).to.be.instanceOf(Date);
         expect(expense.updated_at).to.be.instanceOf(Date);
-        expect(expense.fin_year).to.equal(2026);
+        expect(expense.fin_year).to.equal('2025-26');
 
         const json = expense.toJSON();
         expect(json.expense_id).to.equal(expense._id.toString());
@@ -72,7 +72,7 @@ describe('Expense model', function () {
             expense_date: new Date('2026-05-01'),
             amount: -1,
             purpose: 'Business',
-            fin_year: 2026,
+            fin_year: '2025-26',
         }));
     });
 
@@ -91,7 +91,7 @@ describe('Expense model', function () {
             expense_date: new Date('2026-05-01'),
             amount: 12,
             purpose: 'Travel',
-            fin_year: 2026,
+            fin_year: '2025-26',
         }));
     });
 
@@ -101,7 +101,7 @@ describe('Expense model', function () {
             expense_date: new Date('2026-05-01'),
             amount: 12,
             purpose: 'Business',
-            fin_year: 2026,
+            fin_year: '2025-26',
             status: 'Pending',
         }));
     });
@@ -112,7 +112,7 @@ describe('Expense model', function () {
             expense_date: new Date('2026-05-01'),
             amount: 12,
             purpose: 'Business',
-            fin_year: 2026,
+            fin_year: '2025-26',
         }));
     });
 
@@ -127,6 +127,6 @@ describe('Expense model', function () {
 
         await expense.validate();
 
-        expect(expense.fin_year).to.equal(2027);
+        expect(expense.fin_year).to.equal('2026-27');
     });
 });

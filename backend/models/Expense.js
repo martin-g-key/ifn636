@@ -28,7 +28,7 @@ const expenseSchema = new mongoose.Schema(
             enum: ['Business', 'Private'],
         },
         fin_year: {
-            type: Number,
+            type: String,
             required: true,
         },
         status: {
@@ -70,7 +70,8 @@ expenseSchema.pre('validate', async function () {
     if (this.expense_date instanceof Date && !Number.isNaN(this.expense_date.getTime())) {
         const y = this.expense_date.getUTCFullYear();
         const startYear = this.expense_date.getUTCMonth() >= 6 ? y : y - 1;
-        this.fin_year = startYear + 1;
+        const endYear = startYear + 1;
+        this.fin_year = `${startYear}-${String(endYear % 100).padStart(2, '0')}`;
     }
 
     if (!this.user_id) return;
