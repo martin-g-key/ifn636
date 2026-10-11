@@ -28,7 +28,7 @@ const expenseSchema = new mongoose.Schema(
             enum: ['Business', 'Private'],
         },
         fin_year: {
-            type: String,
+            type: Number,
             required: true,
         },
         status: {
@@ -68,10 +68,9 @@ expenseSchema.index({ user_id: 1, fin_year: 1 });
 // Set Australian financial year from the expense date and validate that the user exists.
 expenseSchema.pre('validate', async function () {
     if (this.expense_date instanceof Date && !Number.isNaN(this.expense_date.getTime())) {
-        const year = this.expense_date.getUTCFullYear();
-        const startYear = this.expense_date.getUTCMonth() >= 6 ? year : year - 1;
-        const endYear = startYear + 1;
-        this.fin_year = `${startYear}-${String(endYear % 100).padStart(2, '0')}`;
+        const y = this.expense_date.getUTCFullYear();
+        const startYear = this.expense_date.getUTCMonth() >= 6 ? y : y - 1;
+        this.fin_year = startYear + 1;
     }
 
     if (!this.user_id) return;
