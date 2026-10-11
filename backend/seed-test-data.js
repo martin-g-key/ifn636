@@ -79,8 +79,7 @@ function tripsFor(startOdometer) {
         );
         console.log(`\n${user.username} (${user.role}):`);
         for (const t of created) {
-            const fy = `${t.fin_year - 1}–${String(t.fin_year).slice(-2)}`;
-            console.log(`  ${t.trip_date.toISOString().slice(0, 10)}  FY ${fy}  ${t.purpose.padEnd(8)}  ${t.start_odometer} → ${t.end_odometer}  (${t.distance_km} km)`);
+            console.log(`  ${t.trip_date.toISOString().slice(0, 10)}  FY ${t.fin_year}  ${t.purpose.padEnd(8)}  ${t.start_odometer} → ${t.end_odometer}  (${t.distance_km} km)`);
         }
     }
 

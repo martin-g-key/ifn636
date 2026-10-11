@@ -9,7 +9,7 @@ const tripSchema = new mongoose.Schema(
         end_odometer: {type: Number, required: true, min: 0}, // should be int
         distance_km: {type: Number}, // should be int, derived from end_odometer - start_odometer
         purpose: {type: String, required: true, enum: ['Business', 'Private'] },
-        fin_year: {type: Number}, // should be year, derived from trip_date
+        fin_year: {type: String}, // should be string e.g. "2025-2026", derived from trip_date
     },
     {
     timestamps: true,
@@ -39,7 +39,8 @@ tripSchema.pre('validate', function () {
   if (this.trip_date) {
     const year = this.trip_date.getUTCFullYear();
     const month = this.trip_date.getUTCMonth();
-    this.fin_year = month >= 6 ? year + 1 : year;
+    const start_year = month >= 6 ? year : year - 1;
+    this.fin_year = `${start_year}-${String(start_year + 1).slice(-2)}`
   }
 });
 

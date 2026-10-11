@@ -4,11 +4,6 @@ function formatDate(iso) {
     return new Date(iso).toLocaleDateString('en-AU', { timeZone: 'UTC' });
 }
 
-// fin_year 2027 -> "2026–27"
-function formatFinYear(fy) {
-    return fy ? `${fy - 1}–${String(fy).slice(-2)}` : '';
-}
-
 export default function TripList({ trips }) {
     if (trips.length === 0) return <p>No trips yet.</p>;
 
@@ -34,7 +29,7 @@ export default function TripList({ trips }) {
                         <td>{trip.end_odometer}</td>
                         <td>{trip.distance_km}</td>
                         <td>{trip.purpose}</td>
-                        <td>{formatFinYear(trip.fin_year)}</td>
+                        <td>{trip.fin_year}</td>
                     </tr>
                 ))}
             </tbody>
