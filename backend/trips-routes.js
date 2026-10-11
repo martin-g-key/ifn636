@@ -26,12 +26,12 @@ function pick_editable_body(body) {
 // control what trips can be seen based on user role 
 async function trips_scope(req) {
     if (req.user.role === 'Employee') {
-        return {user: req.user.sub }; 
+        return {user_id: req.user.sub }; 
     }
     const employees = await UsersModel.find({ employer_username: req.user.username }).select('_id');
     const ids = employees.map((e) => e._id);
     ids.push(req.user.sub);
-    return { user: { $in: ids } };
+    return { user_id: { $in: ids } };
 }
 
 /// PLACEHOLDER mongoose validation checks in editable_fields 
@@ -46,7 +46,7 @@ router.get('/', async (req, res, next) => {
         
         // check user data
         const trips = await TripsModel.find(filter)
-            .populate("user", "username")
+            .populate("user_id", "username")
             .sort({ trip_date: -1 });
         res.json(trips);
     } catch (err) {
@@ -63,7 +63,7 @@ router.post('/', async (req, res, next) => {
 
         const created = await TripsModel.create({
             ...pick_editable_body(req.body),
-            user: req.user.sub,
+            user_id: req.user.sub,
         });
         res.status(201).json(created);
 

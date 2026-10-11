@@ -29,7 +29,7 @@ export default function TripList({ trips }) {
                 {trips.map((trip) => (
                     <tr key={trip.id}>
                         <td>{formatDate(trip.trip_date)}</td>
-                        <td>{trip.user?.username}</td>
+                        <td>{trip.user_id?.username}</td>
                         <td>{trip.start_odometer}</td>
                         <td>{trip.end_odometer}</td>
                         <td>{trip.distance_km}</td>

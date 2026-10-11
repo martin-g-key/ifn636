@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const tripSchema = new mongoose.Schema(
     {
         // fix data types.
-        user: { type: mongoose.Schema.Types.ObjectId, ref:'User', required: true, index: true},
+        user_id: { type: mongoose.Schema.Types.ObjectId, ref:'User', required: true, index: true},
         trip_date: { type: Date, required: true}, // should be date
         start_odometer: {type: Number, required: true, min: 0}, // should be int
         end_odometer: {type: Number, required: true, min: 0}, // should be int

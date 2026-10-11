@@ -1,3 +1,4 @@
 backend/.env
 actions-runner/
 actions-runner/
+.DS_Store
