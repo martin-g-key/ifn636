@@ -46,11 +46,11 @@ describe('Expense reports API', () => {
         });
 
         await Expense.create([
-            { user_id: amy._id,      expense_date: '2026-08-15', amount: 45.5, purpose: 'Work',    fin_year: '2026-27', status: 'Approved' },
+            { user_id: amy._id,      expense_date: '2026-08-15', amount: 45.5, purpose: 'Business',    fin_year: '2026-27', status: 'Approved' },
             { user_id: amy._id,      expense_date: '2026-09-02', amount: 120,  purpose: 'Private', fin_year: '2026-27', status: 'Submitted' },
-            { user_id: amy._id,      expense_date: '2025-10-01', amount: 99,   purpose: 'Work',    fin_year: '2025-26', status: 'Approved' },
-            { user_id: ben._id,      expense_date: '2026-07-20', amount: 60,   purpose: 'Work',    fin_year: '2026-27', status: 'Approved' },
-            { user_id: outsider._id, expense_date: '2026-08-01', amount: 999,  purpose: 'Work',    fin_year: '2026-27', status: 'Approved' },
+            { user_id: amy._id,      expense_date: '2025-10-01', amount: 99,   purpose: 'Business',    fin_year: '2025-26', status: 'Approved' },
+            { user_id: ben._id,      expense_date: '2026-07-20', amount: 60,   purpose: 'Business',    fin_year: '2026-27', status: 'Approved' },
+            { user_id: outsider._id, expense_date: '2026-08-01', amount: 999,  purpose: 'Business',    fin_year: '2026-27', status: 'Approved' },
         ]);
 
         bossToken = tokenFor(boss);
@@ -95,7 +95,7 @@ describe('Expense reports API', () => {
             .get('/api/reports/expenses')
             .set('Authorization', `Bearer ${bossToken}`);
 
-        expect(res.body.every((e) => e.purpose === 'Work')).to.equal(true);
+        expect(res.body.every((e) => e.purpose === 'Business')).to.equal(true);
     });
 
     // --- IA-30 financial year filter ---

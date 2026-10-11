@@ -17,7 +17,7 @@ async function buildScope(user) {
     const employees = await UsersModel.find({ employer_username: user.username }).select('_id');
     return {
         user_id: { $in: employees.map((e) => e._id) },
-        purpose: 'Work',   // private expenses are not the employer's business
+        purpose: 'Business',   // private expenses are not the employer's business
     };
 }
 
