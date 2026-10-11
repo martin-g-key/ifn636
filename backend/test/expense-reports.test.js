@@ -46,11 +46,11 @@ describe('Expense reports API', () => {
         });
 
         await Expense.create([
-            { user_id: amy._id,      expense_date: '2026-08-15', amount: 45.5, purpose: 'Business',    fin_year: '2026-27', status: 'Approved' },
-            { user_id: amy._id,      expense_date: '2026-09-02', amount: 120,  purpose: 'Private', fin_year: '2026-27', status: 'Submitted' },
-            { user_id: amy._id,      expense_date: '2025-10-01', amount: 99,   purpose: 'Business',    fin_year: '2025-26', status: 'Approved' },
-            { user_id: ben._id,      expense_date: '2026-07-20', amount: 60,   purpose: 'Business',    fin_year: '2026-27', status: 'Approved' },
-            { user_id: outsider._id, expense_date: '2026-08-01', amount: 999,  purpose: 'Business',    fin_year: '2026-27', status: 'Approved' },
+            { user_id: amy._id,      expense_date: '2026-08-15', amount: 4550, purpose: 'Business',    fin_year: '2026-27', status: 'Approved' },
+            { user_id: amy._id,      expense_date: '2026-09-02', amount: 12000,  purpose: 'Private', fin_year: '2026-27', status: 'Submitted' },
+            { user_id: amy._id,      expense_date: '2025-10-01', amount: 9900,   purpose: 'Business',    fin_year: '2025-26', status: 'Approved' },
+            { user_id: ben._id,      expense_date: '2026-07-20', amount: 6000,   purpose: 'Business',    fin_year: '2026-27', status: 'Approved' },
+            { user_id: outsider._id, expense_date: '2026-08-01', amount: 99900,  purpose: 'Business',    fin_year: '2026-27', status: 'Approved' },
         ]);
 
         bossToken = tokenFor(boss);

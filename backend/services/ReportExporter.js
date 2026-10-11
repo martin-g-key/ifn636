@@ -17,8 +17,9 @@ class ReportExporter {
         return day + '/' + month + '/' + d.getFullYear();
     }
 
-    formatAmount(value) {
-        return Number(value || 0).toFixed(2);
+    // amounts are stored as whole cents, so 4550 is $45.50
+    formatAmount(cents) {
+        return (Number(cents || 0) / 100).toFixed(2);
     }
 
     export() {
