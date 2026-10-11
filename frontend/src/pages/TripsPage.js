@@ -1,51 +1,27 @@
-// home page -- skeleton
-
 import React, { useState, useEffect } from 'react';
-
-// TODO:
-// Import componenets and API calls
-// import TripList from '../components/TripList';
-// import AddTrip from '../components/AddTrip'
-// import { fetchTrips, createTrips } from '../api';
-
+import TripList from '../components/tripList';
+import { fetchTrips } from '../api';
 
 export default function TripsPage() {
-
-/*
-    // const [users, setUsers] = useState([]);
+    const [trips, setTrips] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+    const [error, setError] = useState(null); 
 
-
+    // runs once when the page loads
     useEffect(() => {
-        fetchUsers()
-            .then((data) => setUsers(data))
+        fetchTrips()
+            .then((data) => setTrips(data))
             .catch((err) => setError(err.message))
             .finally(() => setLoading(false));
     }, []);
 
-
-    const handleAdd = async (username) => {
-        try {
-            const created = await createUser(username);
-            // show new user record
-            setUsers((prev) => [created, ...prev]); 
-        } catch (err) {
-            setError(err.message);
-        }
-    };
-
-
-
     if (loading) return <p>Loading...</p>;
-*/ 
 
     return (
         <div>
-            <h1>skeleton app</h1>
-            <h2> trips page</h2>
-            {error && <p style={{color: 'red' }}>Error: {error}</p>}
+            <h2>Trips</h2>
+            {error && <p style={{ color: 'red' }}>Error: {error}</p>}
+            <TripList trips={trips} />
         </div>
     );
-
-} 
+}
