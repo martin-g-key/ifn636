@@ -1,51 +1,126 @@
-name: Backend CI
+name: CI/CD A2
 
-on:
-  push:
-    branches:
-      - main
+on: 
+  push: 
+    branches: [main]
+  pull_request:
+    branches: [main]
 
 jobs:
+
+  # test should run on each PR + push to main
+  # change to github vm from self-hosted
   test:
-    name: Run Tests
-    runs-on: self-hosted
-    strategy:
-      matrix:
-        node-version: [22]
+    name: test and build
+    runs-on: ubuntu-latest
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
+      - name: Setup node.js
+        uses: actions/setup-node@v4
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            backend/package-lock.json
+            frontend/package-lock.json
 
-      - name: Stop Running Services
-        run: pm2 stop all || true
-
-      - name: Install Backend Dependencies
+      - name: Backend - install and test
         working-directory: ./backend
-        run: npm ci
-
-      - name: Install Frontend Dependencies and Build
-        working-directory: ./frontend
-        env:
-          API_BASE: http://54.253.93.151:5001
         run: |
           npm ci
-          rm -rf ./dist
+          npm test
+
+      - name: Frontend - install and build 
+        working-directory: ./frontend
+        run: |
+          npm ci
           npm run build
 
-      - name: Run Backend Tests
-        working-directory: ./backend
-        run: npm test
+  deploy: 
+    name: deploy (${{ matrix.instance }})
+    # make sure tests have been run before deploy
+    needs: test
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
 
-      - name: Write Production .env
-        working-directory: ./backend
-        run: echo "${{ secrets.PROD }}" > .env
+    environment:
+      name: production
+      url: ${{ vars.ALB_DNS }}
 
-      - name: Restart Services
+    concurrency:
+      group: production-deploy-${{ matrix.instance }}
+      cancel-in-progress: false
+
+    strategy:
+      max-parallel: 1
+      fail-fast: true
+      matrix:
+        instance: [ec2-a, ec2-b]
+
+    runs-on: [self-hosted, "${{ matrix.instance }}"]
+
+    steps: 
+      - name: checkout code
+        uses: actions/checkout@v4
+
+      - name: setup node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      
+      - name: backend - install production dependencies
+        working-directory: ./backend
+        run: npm ci --omit=dev
+        
+      - name: frontend - install and build 
+        working-directory: ./frontend
+        env:
+          API_BASE: ${{ vars.ALB_DNS }}
         run: |
-          pm2 start all || true
-          pm2 restart all
+          npm ci
+          npm run build
+        
+      # managing secrets through .env
+      - name: write production .env
+        working-directory: ./backend
+        env: 
+          PORT: ${{ vars.PORT }}
+          ADMIN_USERNAME: ${{ vars.ADMIN_USERNAME }}
+          MONGODB_URI: ${{ secrets.MONGODB_URI }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+        run: |
+          umask 077 # .env readable by the runner user only
+          {
+            printf 'PORT=%s\n'           "$PORT"
+            printf 'MONGODB_URI=%s\n'    "$MONGODB_URI"
+            printf 'JWT_SECRET=%s\n'     "$JWT_SECRET"
+            printf 'ADMIN_USERNAME=%s\n' "$ADMIN_USERNAME"
+            printf 'ADMIN_PASSWORD=%s\n' "$ADMIN_PASSWORD"
+          } > .env
+
+      - name: restart services
+        run: |
+          pm2 restart all --update-env
+          pm2 save
+
+      - name: health check of instance
+        env: 
+          PORT: ${{ vars.PORT }}
+        run: |
+          for i in $(seq 1 10); do
+            if curl -fsS "http://localhost:${PORT:-5001}/api/health"; then
+              echo " - healthy"; exit 0
+            fi
+            echo "Not healthy yet (attempt $i/10)"; sleep 3
+          done
+          echo "Health check failed"; pm2 logs --lines 50 --nostream; exit 1
+        
+
+
+
+        
+          
+
+
