@@ -54,7 +54,7 @@ jobs:
 
     strategy:
       max-parallel: 1
-      fail-fast: true
+      fail-fast: true 
       matrix:
         instance: [ec2-a, ec2-b]
 
