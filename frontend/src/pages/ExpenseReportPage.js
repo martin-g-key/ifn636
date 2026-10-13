@@ -56,22 +56,26 @@ export default function ExpenseReportPage() {
         <div>
             <h2>Expense reports</h2>
 
-            <label htmlFor="fin_year">Financial year: </label>
-            <select
-                id="fin_year"
-                value={finYear === null ? '' : finYear}
-                onChange={(e) => setFinYear(e.target.value)}
-            >
-                <option value="">All years</option>
-                {years.map((year) => (
-                    <option key={year} value={year}>{year}</option>
-                ))}
-            </select>
+            <label htmlFor="fin_year">Financial year</label>
 
-            {' '}
-            <button onClick={handleDownload} disabled={downloading || loading}>
-                {downloading ? 'Preparing...' : 'Download CSV'}
-            </button>
+            {/* pico stretches a bare select across the whole page, role=group keeps
+                the dropdown and the button together on one line */}
+            <div role="group">
+                <select
+                    id="fin_year"
+                    value={finYear === null ? '' : finYear}
+                    onChange={(e) => setFinYear(e.target.value)}
+                >
+                    <option value="">All years</option>
+                    {years.map((year) => (
+                        <option key={year} value={year}>{year}</option>
+                    ))}
+                </select>
+
+                <button onClick={handleDownload} disabled={downloading || loading}>
+                    {downloading ? 'Preparing...' : 'Download CSV'}
+                </button>
+            </div>
 
             {error && <p style={{ color: 'red' }}>Error: {error}</p>}
 
