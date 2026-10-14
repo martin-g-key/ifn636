@@ -1,7 +1,8 @@
 // Entry point for backend
 
 // use .env file for secrets
-require('dotenv').config(); 
+require('dotenv').config();
+const os = require('os');
 
 // modules 
 //const fs = require('fs');
@@ -20,6 +21,9 @@ const expenseReportsRouter = require('./expense-report-routes');
 // start up express
 const app = express();
 const PORT = process.env.PORT || 5001;
+
+// server id for load balancing / multiple ec2 instances 
+const SERVER_ID = process.env.SERVER_ID || os.hostname();
 
 app.use((req, res, next) => {
     console.log(`${req.method} ${req.url}`);
@@ -49,7 +53,7 @@ app.get('/', (req, res) => {
 
 // routes -- health check
 app.get('/api/health', (req, res) => {
-    res.json({ status: 'ok' })
+    res.json({ status: 'ok', server: SERVER_ID})
 });
 
 

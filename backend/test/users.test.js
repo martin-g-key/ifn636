@@ -1,9 +1,6 @@
 // Testing using Mocha, Chai, Supertest
 
-// create test inputs that would otherwise live in .env
-process.env.JWT_SECRET = 'test_JWT_SECRET';
-process.env.ADMIN_USERNAME = 'admin';
-process.env.ADMIN_PASSWORD = 'admin_123';
+
  
 const { expect } = require('chai');
 const request = require('supertest');
@@ -35,7 +32,7 @@ describe('Users API', () => {
     it('GET /api/health returns ok', async() => {
         const res = await request(app).get('/api/health');
         expect(res.status).to.equal(200);
-        expect(res.body).to.deep.equal({ status: 'ok'});
+        expect(res.body).to.deep.equal({ status: 'ok',server:'test'});
     });
 
     // test 2 -- token
