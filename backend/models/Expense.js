@@ -16,7 +16,8 @@ const expenseSchema = new mongoose.Schema(
         amount: {
             type: Number,
             required: true,
-            min: 0,
+            // The data model stores amounts as positive whole cents.
+            min: 1,
             validate: {
                 validator: Number.isInteger,
                 message: 'Amount should be an integer number of cents',

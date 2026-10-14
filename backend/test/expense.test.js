@@ -11,6 +11,7 @@ describe('Expense model', function () {
 
     before(async function () {
         this.timeout(120000); // Download MongoDB
+        // Keep model tests isolated from both development and production databases.
         mongo = await MongoMemoryServer.create();
         await mongoose.connect(mongo.getUri());
 
@@ -39,6 +40,7 @@ describe('Expense model', function () {
     }
 
     it('defines a compound index for report queries', () => {
+        // Index employee and financial year for reporting.
         const indexes = Expense.schema.indexes();
 
         expect(indexes).to.deep.include([
@@ -55,6 +57,8 @@ describe('Expense model', function () {
             purpose: 'Business',
         });
 
+        // Amounts are stored as integer cents,
+        // and the model derives the status and financial year.
         expect(expense.amount).to.equal(1235);
         expect(expense.status).to.equal('Submitted');
         expect(expense.created_at).to.be.instanceOf(Date);
@@ -62,6 +66,7 @@ describe('Expense model', function () {
         expect(expense.fin_year).to.equal('2025-26');
 
         const json = expense.toJSON();
+        // API JSON exposes expense_id instead of Mongo's internal _id.
         expect(json.expense_id).to.equal(expense._id.toString());
         expect(json).to.not.have.property('_id');
     });
@@ -117,6 +122,7 @@ describe('Expense model', function () {
     });
 
     it('sets fin_year from expense_date and overrides a supplied value', async () => {
+        // Calculate the financial year from the date, not from input.
         const expense = new Expense({
             user_id: user._id,
             expense_date: new Date('2026-07-01'),
