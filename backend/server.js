@@ -6,7 +6,7 @@ const os = require('os');
 
 // modules 
 //const fs = require('fs');
-//const path = require('path');
+const path = require('path');
 const express = require('express');
 const cors = require ('cors');
 // modules -- authentication
@@ -35,6 +35,11 @@ app.use((req, res, next) => {
 app.use(cors());
 app.use(express.json());
 
+// the pipeline builds the react app into frontend/dist, so serve it from here
+// rather than running a second web server next to this one
+const distPath = path.join(__dirname, '..', 'frontend', 'dist');
+app.use(express.static(distPath));
+
 
 // ------ routes ------ 
 // authentication routes
@@ -54,6 +59,14 @@ app.get('/', (req, res) => {
 // routes -- health check
 app.get('/api/health', (req, res) => {
     res.json({ status: 'ok', server: SERVER_ID})
+});
+
+
+// react router handles the paths inside the app, so anything that is not an
+// api call gets index.html and the browser works out which page to show.
+// without this a refresh on /expense-reports returns a 404.
+app.get(/^(?!\/api).*/, (req, res) => {
+    res.sendFile(path.join(distPath, 'index.html'));
 });
 
 
