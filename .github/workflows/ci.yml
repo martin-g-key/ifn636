@@ -54,9 +54,9 @@ jobs:
 
     strategy:
       max-parallel: 1
-      fail-fast: true 
+      fail-fast: false 
       matrix:
-        instance: [ec2-a, ec2-b]
+        instance: [REZ-A2-instance1,  REZ-A2-instance2]
 
     runs-on: [self-hosted, "${{ matrix.instance }}"]
 
@@ -90,6 +90,7 @@ jobs:
           MONGODB_URI: ${{ secrets.MONGODB_URI }}
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
           ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+          SERVER_ID: ${{ matrix.instance }}
         run: |
           umask 077 # .env readable by the runner user only
           {
@@ -98,12 +99,16 @@ jobs:
             printf 'JWT_SECRET=%s\n'     "$JWT_SECRET"
             printf 'ADMIN_USERNAME=%s\n' "$ADMIN_USERNAME"
             printf 'ADMIN_PASSWORD=%s\n' "$ADMIN_PASSWORD"
+            printf 'SERVER_ID=%s\n'      "$SERVER_ID"
           } > .env
 
-      - name: restart services
+
+      - name: Restart Services
         run: |
-          pm2 restart all --update-env
+          pm2 start all || true
+          pm2 restart all
           pm2 save
+
 
       - name: health check of instance
         env: 
