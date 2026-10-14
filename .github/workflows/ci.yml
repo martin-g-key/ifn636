@@ -14,7 +14,7 @@ jobs:
     name: test and build
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
+      - name: Checkout codex
         uses: actions/checkout@v4
 
       - name: Setup node.js
@@ -103,10 +103,10 @@ jobs:
           } > .env
 
 
-      - name: Restart Services
+      - name: start or reload app
         run: |
-          pm2 start all || true
-          pm2 restart all
+          pm2 delete ifn636-backend || true   
+          pm2 startOrReload ecosystem.config.js --update-env
           pm2 save
 
 
