@@ -5,6 +5,7 @@ import { BrowserRouter,Routes, Route, Link } from 'react-router-dom';
 import HomePage from './pages/HomePage'
 import TripsPage from './pages/TripsPage'
 import LoginPage from './pages/LoginPage'
+import ExpenseReportPage from './pages/ExpenseReportPage'
 
 export default function App() {
     // logged in or logged out based on whether a token is there
@@ -25,12 +26,14 @@ export default function App() {
         <BrowserRouter>
             <nav style = {{ marginBottom: '1rem' }}> 
                 <Link to="/">Home</Link> | <Link to="/trips">Trips</Link>{' '}
+                | <Link to="/expense-reports">Expense reports</Link>{' '}
                 {role === 'Employer' && <span>| (employer) </span>}
                 | <button onClick={handleLogout}>Log out</button>
             </nav>
             <Routes>
                 <Route path="/" element={<HomePage />} />
                 <Route path="/trips" element={<TripsPage />} /> 
+                <Route path="/expense-reports" element={<ExpenseReportPage />} />
             </Routes>
         </BrowserRouter>
     );
