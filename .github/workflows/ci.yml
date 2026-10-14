@@ -105,8 +105,9 @@ jobs:
 
       - name: start or reload app
         run: |
-          pm2 delete ifn636-backend || true   
-          pm2 startOrReload ecosystem.config.js --update-env
+          pm2 delete ifn636-backend || true
+          pm2 delete ifn636_A2 || true    
+          pm2 start ecosystem.config.js --update-env
           pm2 save
 
 
