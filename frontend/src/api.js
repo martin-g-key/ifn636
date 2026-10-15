@@ -114,3 +114,15 @@ export async function downloadExpenseReport(finYear) {
     link.remove();
     window.URL.revokeObjectURL(url);   // the blob stays in memory until this is called
 }
+
+export async function createExpense(expense) {
+    // Reuse the saved JWT so the API can link the expense to the authenticated user.
+    const res = await fetch(`${API_BASE}/api/expenses`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...authHeaders() },
+        body: JSON.stringify(expense),
+    });
+    const body = await res.json();
+    if (!res.ok) throw new Error(body.error || 'Failed to create expense');
+    return body;
+}

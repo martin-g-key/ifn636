@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import ExpenseList from '../components/expenseList';
+import AddExpense from '../components/AddExpense';
 import { fetchExpenseReport, fetchFinancialYears, downloadExpenseReport } from '../api';
 
 // australian financial year runs july to june, so anything from july onwards
@@ -16,7 +17,10 @@ export default function ExpenseReportPage() {
     const [expenses, setExpenses] = useState([]);
     const [loading, setLoading] = useState(true);
     const [downloading, setDownloading] = useState(false);
+    const [showAddForm, setShowAddForm] = useState(false);
     const [error, setError] = useState(null);
+    const isEmployee = typeof sessionStorage !== 'undefined' &&
+        sessionStorage.getItem('role') === 'Employee';
 
     // runs once when the page loads
     useEffect(() => {
@@ -52,9 +56,31 @@ export default function ExpenseReportPage() {
             .finally(() => setDownloading(false));
     };
 
+    const handleExpenseCreated = (expense) => {
+        // Show the saved expense right away, avoiding a full page reload.
+        setExpenses((current) => [...current, expense]
+            .sort((a, b) => new Date(a.expense_date) - new Date(b.expense_date)));
+        setYears((current) => current.includes(expense.fin_year)
+            ? current
+            : [...current, expense.fin_year].sort().reverse());
+        setFinYear(expense.fin_year);
+        setShowAddForm(false);
+    };
+
     return (
         <div>
             <h2>Expense reports</h2>
+            {/* Only employees can start creating an expense. */}
+            {isEmployee && !showAddForm && (
+                <button type="button" onClick={() => setShowAddForm(true)}>Add Expense</button>
+            )}
+            {/* Show the form after the employee clicks Add Expense. */}
+            {isEmployee && showAddForm && (
+                <AddExpense
+                    onCreated={handleExpenseCreated}
+                    onCancel={() => setShowAddForm(false)}
+                />
+            )}
 
             <label htmlFor="fin_year">Financial year</label>
 

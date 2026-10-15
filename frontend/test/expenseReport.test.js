@@ -5,6 +5,7 @@ const { expect } = require('chai');
 const { renderToString } = require('react-dom/server');
 
 const ExpenseList = require('../src/components/expenseList').default;
+const AddExpense = require('../src/components/AddExpense').default;
 const ExpenseReportPage = require('../src/pages/ExpenseReportPage').default;
 
 describe('expenseList component', () => {
@@ -48,5 +49,34 @@ describe('expense report page', () => {
         expect(html).to.contain('Financial year');
         expect(html).to.contain('All years');
         expect(html).to.contain('Download CSV');
+    });
+
+    it('shows Add Expense to employees only', () => {
+        const originalSessionStorage = global.sessionStorage;
+        global.sessionStorage = {
+            getItem: (key) => key === 'role' ? 'Employee' : null,
+        };
+        const employeeHtml = renderToString(React.createElement(ExpenseReportPage));
+
+        global.sessionStorage = {
+            getItem: (key) => key === 'role' ? 'Employer' : null,
+        };
+        const employerHtml = renderToString(React.createElement(ExpenseReportPage));
+        global.sessionStorage = originalSessionStorage;
+
+        expect(employeeHtml).to.contain('Add Expense');
+        expect(employerHtml).to.not.contain('Add Expense');
+    });
+
+    it('renders the add-expense form fields', () => {
+        const html = renderToString(React.createElement(AddExpense, {
+            onCreated: () => {},
+            onCancel: () => {},
+        }));
+
+        expect(html).to.contain('Expense Date');
+        expect(html).to.contain('Amount ($)');
+        expect(html).to.contain('Business');
+        expect(html).to.contain('Private');
     });
 });
