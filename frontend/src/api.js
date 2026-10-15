@@ -87,6 +87,13 @@ export async function fetchFinancialYears() {
 // fetchExpenseReport
 // leave finYear empty to get every year back
 export async function fetchExpenseReport(finYear) {
+    if (sessionStorage.getItem('role') === 'Employee') {
+        const expenses = await fetchExpenses();
+        return finYear
+            ? expenses.filter((expense) => expense.fin_year === finYear)
+            : expenses;
+    }
+
     const query = finYear ? `?fin_year=${finYear}` : '';
     const res = await fetch(`${API_BASE}/api/reports/expenses${query}`, { headers: { ...authHeaders() } });
     if (!res.ok) throw new Error('Failed to fetch expense report');
@@ -125,4 +132,12 @@ export async function createExpense(expense) {
     const body = await res.json();
     if (!res.ok) throw new Error(body.error || 'Failed to create expense');
     return body;
+}
+
+export async function fetchExpenses() {
+    // The JWT identifies the employee
+    // the API returns only that employee's expenses.
+    const res = await fetch(`${API_BASE}/api/expenses`, { headers: { ...authHeaders() } });
+    if (!res.ok) throw new Error('Failed to fetch expenses');
+    return res.json();
 }
