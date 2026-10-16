@@ -68,10 +68,22 @@ export async function deleteUser(id) {
 }
 
 
-// fetchTrips
-export async function fetchTrips() {
-    const res = await fetch(`${API_BASE}/api/trips`, {headers: {...authHeaders()}});
-    if(!res.ok) throw new Error('Failed to fetch trips');
+// fetchTrips (optional financial year filter)
+export async function fetchTrips(finYear) {
+    const query = finYear ? `?fin_year=${encodeURIComponent(finYear)}` : '';
+    const res = await fetch(`${API_BASE}/api/trips${query}`, {
+        headers: { ...authHeaders() }
+    });
+    if (!res.ok) throw new Error('Failed to fetch trips');
+    return res.json();
+}
+
+// fetchFinYears
+export async function fetchFinYears() {
+    const res = await fetch(`${API_BASE}/api/trips/fin-years`, {
+        headers: { ...authHeaders() }
+    });
+    if (!res.ok) throw new Error('Failed to fetch financial years');
     return res.json();
 }
 
