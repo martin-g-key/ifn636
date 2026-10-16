@@ -47,8 +47,8 @@ app.use(express.static(distPath));
 app.post('/api/login', login);
 app.use('/api/users', requireAuth, requireRole('Employer'), usersRouter);
 app.use('/api/trips', requireAuth, tripsRouter);
-// Expense creation is restricted to employees; authentication supplies req.user.
-app.use('/api/expenses', requireAuth, requireRole('Employee'), expensesRouter);
+// Expense routes use the authenticated user to scope reads and creates.
+app.use('/api/expenses', requireAuth, expensesRouter);
 
 // reporting is open to both roles, the router scopes what each one sees
 app.use('/api/reports', requireAuth, expenseReportsRouter);

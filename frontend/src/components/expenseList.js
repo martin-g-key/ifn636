@@ -24,15 +24,17 @@ export default function ExpenseList({ expenses }) {
                 </tr>
             </thead>
             <tbody>
-                {expenses.map((expense) => (
-                    <tr key={expense.expense_id}>
-                        <td>{formatDate(expense.expense_date)}</td>
-                        <td>{formatAmount(expense.amount)}</td>
-                        <td>{expense.purpose}</td>
-                        <td>{expense.status}</td>
-                        <td>{expense.fin_year}</td>
-                    </tr>
-                ))}
+                {[...expenses]
+                    .sort((a, b) => new Date(b.expense_date) - new Date(a.expense_date))
+                    .map((expense) => (
+                        <tr key={expense.expense_id}>
+                            <td>{formatDate(expense.expense_date)}</td>
+                            <td>{formatAmount(expense.amount)}</td>
+                            <td>{expense.purpose}</td>
+                            <td>{expense.status}</td>
+                            <td>{expense.fin_year}</td>
+                        </tr>
+                    ))}
             </tbody>
         </table>
     );

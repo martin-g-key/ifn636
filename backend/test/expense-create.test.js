@@ -8,6 +8,7 @@ const { MongoMemoryServer } = require('mongodb-memory-server');
 
 const app = require('../server');
 const UsersModel = require('../models/Users');
+const Expense = require('../models/Expense');
 
 // Make tokens use the same claims the auth middleware checks.
 function tokenFor(user) {
@@ -36,11 +37,19 @@ function nextDate(date) {
     return parsed.toISOString().slice(0, 10);
 }
 
+function previousDate(date) {
+    const parsed = new Date(`${date}T00:00:00.000Z`);
+    parsed.setUTCDate(parsed.getUTCDate() - 1);
+    return parsed.toISOString().slice(0, 10);
+}
+
 describe('Create expense API (IA-26)', () => {
     let mongo;
     let employee;
+    let secondEmployee;
     let employer;
     let employeeToken;
+    let secondEmployeeToken;
     let employerToken;
     const expenseDate = todayInBrisbane();
 
@@ -62,8 +71,15 @@ describe('Create expense API (IA-26)', () => {
             role: 'Employee',
             employer_username: employer.username,
         });
+        secondEmployee = await UsersModel.create({
+            username: 'expense-second-employee',
+            password_hash: 'test-hash',
+            role: 'Employee',
+            employer_username: employer.username,
+        });
 
         employeeToken = tokenFor(employee);
+        secondEmployeeToken = tokenFor(secondEmployee);
         employerToken = tokenFor(employer);
     });
 
@@ -109,6 +125,29 @@ describe('Create expense API (IA-26)', () => {
         expect(res.status).to.equal(403);
     });
 
+    it('requires authentication to view expenses', async () => {
+        const res = await request(app).get('/api/expenses');
+
+        expect(res.status).to.equal(401);
+    });
+
+    it('rejects an invalid JWT when viewing expenses', async () => {
+        const res = await request(app)
+            .get('/api/expenses')
+            .set('Authorization', 'Bearer invalid-token');
+
+        expect(res.status).to.equal(401);
+    });
+
+    it('returns an empty list when the employee has no expenses', async () => {
+        const res = await request(app)
+            .get('/api/expenses')
+            .set('Authorization', `Bearer ${secondEmployeeToken}`);
+
+        expect(res.status).to.equal(200);
+        expect(res.body).to.deep.equal([]);
+    });
+
     it('creates an employee-owned Submitted expense and derives the financial year', async () => {
         const res = await request(app)
             .post('/api/expenses')
@@ -130,17 +169,33 @@ describe('Create expense API (IA-26)', () => {
             user_id: employee._id.toString(),
         });
         expect(res.body.fin_year).to.match(/^\d{4}-\d{2}$/);
+
+        await Expense.create({
+            user_id: employee._id,
+            expense_date: previousDate(expenseDate),
+            amount: 900,
+            purpose: 'Private',
+        });
+        await Expense.create({
+            user_id: secondEmployee._id,
+            expense_date: expenseDate,
+            amount: 5000,
+            purpose: 'Business',
+        });
     });
 
-    it('makes the newly created expense visible in the employee expense list', async () => {
+    it('returns only the employee expenses, newest first', async () => {
         const res = await request(app)
-            .get('/api/reports/expenses')
+            .get('/api/expenses')
             .set('Authorization', `Bearer ${employeeToken}`);
 
         expect(res.status).to.equal(200);
-        expect(res.body).to.have.lengthOf(1);
+        expect(res.body).to.have.lengthOf(2);
         expect(res.body[0].purpose).to.equal('Business');
         expect(res.body[0].status).to.equal('Submitted');
+        expect(new Date(res.body[0].expense_date).getTime())
+            .to.be.greaterThan(new Date(res.body[1].expense_date).getTime());
+        expect(res.body.every((expense) => expense.user_id === employee._id.toString())).to.equal(true);
     });
 
     for (const [description, body] of [

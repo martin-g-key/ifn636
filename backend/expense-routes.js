@@ -1,5 +1,6 @@
 const express = require('express');
 const Expense = require('./models/Expense');
+const { requireRole } = require('./auth');
 
 const router = express.Router();
 
@@ -34,7 +35,18 @@ function isValidAmount(value) {
         Math.abs(value * 100 - Math.round(value * 100)) < 1e-7;
 }
 
-router.post('/', async (req, res, next) => {
+router.get('/', async (req, res, next) => {
+    try {
+        // Employees can only read expenses for their JWT subject.
+        const expenses = await Expense.find({ user_id: req.user.sub })
+            .sort({ expense_date: -1 });
+        res.json(expenses);
+    } catch (err) {
+        next(err);
+    }
+});
+
+router.post('/', requireRole('Employee'), async (req, res, next) => {
     // Ignore client-supplied ownership and status,
     // those are controlled by auth and workflow.
     const body = req.body && typeof req.body === 'object' && !Array.isArray(req.body)
