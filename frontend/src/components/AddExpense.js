@@ -27,11 +27,10 @@ export default function AddExpense({ onCreated, onCancel }) {
         setSaving(true);
 
         try {
-            // Submit amounts in dollars,
-            // the API performs validation and converts them to cents.
+            // The form is in Australian dollars; the API accepts whole cents.
             const created = await createExpense({
                 expense_date: expenseDate,
-                amount: Number(amount),
+                amount: Math.round(Number(amount) * 100),
                 purpose,
             });
             onCreated(created);
