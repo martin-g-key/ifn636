@@ -57,9 +57,14 @@ export default function ExpenseReportPage() {
     };
 
     const handleExpenseCreated = (expense) => {
-        // Show the saved expense right away, avoiding a full page reload.
-        setExpenses((current) => [...current, expense]
-            .sort((a, b) => new Date(a.expense_date) - new Date(b.expense_date)));
+        if (finYear === expense.fin_year) {
+            setLoading(true);
+            setError(null);
+            fetchExpenseReport(expense.fin_year)
+                .then((data) => setExpenses(data))
+                .catch((err) => setError(err.message))
+                .finally(() => setLoading(false));
+        }
         setYears((current) => current.includes(expense.fin_year)
             ? current
             : [...current, expense.fin_year].sort().reverse());
