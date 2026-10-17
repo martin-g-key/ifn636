@@ -147,9 +147,8 @@ export async function createExpense(expense) {
 }
 
 export async function fetchExpenses() {
-    // The JWT identifies the employee
-    // the API returns only that employee's expenses.
-    const res = await fetch(`${API_BASE}/api/expenses`, { headers: { ...authHeaders() } });
+    // The report endpoint scopes results to the authenticated user's role.
+    const res = await fetch(`${API_BASE}/api/reports/expenses`, { headers: { ...authHeaders() } });
     if (!res.ok) throw new Error('Failed to fetch expenses');
     return res.json();
 }
