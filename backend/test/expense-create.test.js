@@ -126,14 +126,14 @@ describe('Create expense API (IA-26)', () => {
     });
 
     it('requires authentication to view expenses', async () => {
-        const res = await request(app).get('/api/expenses');
+        const res = await request(app).get('/api/reports/expenses');
 
         expect(res.status).to.equal(401);
     });
 
     it('rejects an invalid JWT when viewing expenses', async () => {
         const res = await request(app)
-            .get('/api/expenses')
+            .get('/api/reports/expenses')
             .set('Authorization', 'Bearer invalid-token');
 
         expect(res.status).to.equal(401);
@@ -141,11 +141,19 @@ describe('Create expense API (IA-26)', () => {
 
     it('returns an empty list when the employee has no expenses', async () => {
         const res = await request(app)
-            .get('/api/expenses')
+            .get('/api/reports/expenses')
             .set('Authorization', `Bearer ${secondEmployeeToken}`);
 
         expect(res.status).to.equal(200);
         expect(res.body).to.deep.equal([]);
+    });
+
+    it('does not provide a separate GET /api/expenses endpoint', async () => {
+        const res = await request(app)
+            .get('/api/expenses')
+            .set('Authorization', `Bearer ${employeeToken}`);
+
+        expect(res.status).to.equal(404);
     });
 
     it('creates an employee-owned Submitted expense and derives the financial year', async () => {
@@ -184,18 +192,19 @@ describe('Create expense API (IA-26)', () => {
         });
     });
 
-    it('returns only the employee expenses, newest first', async () => {
+    it('returns only the employee expenses, oldest first', async () => {
         const res = await request(app)
-            .get('/api/expenses')
+            .get('/api/reports/expenses')
             .set('Authorization', `Bearer ${employeeToken}`);
 
         expect(res.status).to.equal(200);
         expect(res.body).to.have.lengthOf(2);
-        expect(res.body[0].purpose).to.equal('Business');
-        expect(res.body[0].amount).to.equal(1234);
-        expect(res.body[0].status).to.equal('Submitted');
+        expect(res.body[0].purpose).to.equal('Private');
+        expect(res.body[1].purpose).to.equal('Business');
+        expect(res.body[1].amount).to.equal(1234);
+        expect(res.body[1].status).to.equal('Submitted');
         expect(new Date(res.body[0].expense_date).getTime())
-            .to.be.greaterThan(new Date(res.body[1].expense_date).getTime());
+            .to.be.lessThan(new Date(res.body[1].expense_date).getTime());
         expect(res.body.every((expense) => expense.user_id === employee._id.toString())).to.equal(true);
     });
 

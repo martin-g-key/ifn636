@@ -50,7 +50,7 @@ app.get('/api/auth/validate', requireAuth, (req, res) => {
 });
 app.use('/api/users', requireAuth, requireRole('Employer'), usersRouter);
 app.use('/api/trips', requireAuth, tripsRouter);
-// Expense routes use the authenticated user to scope reads and creates.
+// Expense creation uses the authenticated user as the owner.
 app.use('/api/expenses', requireAuth, expensesRouter);
 
 // reporting is open to both roles, the router scopes what each one sees
