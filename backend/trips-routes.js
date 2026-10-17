@@ -30,6 +30,22 @@ router.get('/fin-years', async (req, res, next) => {
     } catch (err) { fail(err, res, next); }
 });
 
+// GET /api/trips/export?fin_year=2025-26
+router.get('/export', async (req, res, next) => {
+    try {
+        const csv = await TripsFacade.createExport(
+            req.user,
+            { finYear: req.query.fin_year }
+        );
+
+        res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+        res.attachment('trips.csv');
+        res.send(csv);
+    } catch (err) {
+        fail(err, res, next);
+    }
+});
+
 // POST /api/trips
 router.post('/', async (req, res, next) => {
     try {
