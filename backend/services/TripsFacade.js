@@ -11,9 +11,10 @@ const TripsModel = require('../models/Trips');
 const UsersModel = require('../models/Users');
 const TripVisibility = require('./TripVisibility');
 const FinancialYear = require('./FinancialYear');
+const TripsCsvExporter = require('./TripsCsvExporter');
 
 class TripsFacade {
-    // private 
+    // private
 
     static #EDITABLE_FIELDS = Object.freeze(['trip_date', 'start_odometer', 'end_odometer', 'purpose']);
 
@@ -70,6 +71,16 @@ class TripsFacade {
         });
         await created.populate('user_id', 'username');
         return created;
+    }
+    // Export visible trips as CSV
+    static async createExport(user, { finYear } = {}) {
+        const filter = await TripsFacade.#filterFor(user, finYear);
+
+        const rows = await TripsModel.find(filter)
+        .sort({ trip_date: -1 })
+        .lean();
+
+        return TripsCsvExporter.export(rows);
     }
 }
 

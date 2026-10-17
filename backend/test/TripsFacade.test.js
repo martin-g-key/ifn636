@@ -38,4 +38,46 @@ describe('Trip Facade', () => {
         expect(create.firstCall.args[0]).to.deep.equal({ trip_date: '2026-07-09', purpose: 'Business',
             start_odometer: 1, end_odometer: 2, user_id: 'employee' });
     });
+
+    it('IA-22 exports trips for the selected financial year', async () => {
+        const rows = [{
+            _id: 'trip1',
+            user_id: 'employee',
+            trip_date: new Date('2026-08-15'),
+            start_odometer: 100,
+            end_odometer: 120,
+            distance_km: 20,
+            purpose: 'Business',
+            fin_year: '2026-27'
+        }];
+
+        const lean = sinon.stub().resolves(rows);
+        const sort = sinon.stub().returns({ lean });
+        const find = sinon.stub(Trips, 'find').returns({ sort });
+
+        const csv = await Facade.createExport(employee, {
+            finYear: '2026-27'
+        });
+
+        expect(find.firstCall.args[0]).to.deep.equal({
+            user_id: 'employee',
+            fin_year: '2026-27'
+        });
+
+        expect(csv).to.include('2026-08-15');
+        expect(csv).to.include('Business');
+    });
+
+    it('IA-22 exports CSV with all trip table columns', async () => {
+        const lean = sinon.stub().resolves([]);
+        const sort = sinon.stub().returns({ lean });
+        sinon.stub(Trips, 'find').returns({ sort });
+
+        const csv = await Facade.createExport(employee);
+
+        expect(csv).to.include(
+            'trip_id,user_id,trip_date,start_odometer,end_odometer,' +
+            'distance_km,purpose,fin_year,created_at,updated_at'
+        );
+    });
 });
