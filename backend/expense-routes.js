@@ -27,12 +27,10 @@ function isValidExpenseDate(value) {
 }
 
 function isValidAmount(value) {
-    // API amounts are provided in dollars,
-    // convert to whole cents when storing in the model.
     return typeof value === 'number' &&
         Number.isFinite(value) &&
         value > 0 &&
-        Math.abs(value * 100 - Math.round(value * 100)) < 1e-7;
+        Number.isInteger(value);
 }
 
 router.get('/', async (req, res, next) => {
@@ -58,7 +56,7 @@ router.post('/', requireRole('Employee'), async (req, res, next) => {
         return res.status(400).json({ error: 'expense_date must be a valid date no later than today' });
     }
     if (!isValidAmount(amount)) {
-        return res.status(400).json({ error: 'amount must be greater than 0 with no more than 2 decimal places' });
+        return res.status(400).json({ error: 'amount must be a positive whole number of Australian cents' });
     }
     if (purpose !== 'Business' && purpose !== 'Private') {
         return res.status(400).json({ error: "purpose must be 'Business' or 'Private'" });
@@ -68,8 +66,7 @@ router.post('/', requireRole('Employee'), async (req, res, next) => {
         const expense = await Expense.create({
             user_id: req.user.sub,
             expense_date,
-            // Convert dollars to integer cents for storage.
-            amount: Math.round(amount * 100),
+            amount,
             purpose,
             status: 'Submitted',
         });

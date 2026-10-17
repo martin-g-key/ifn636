@@ -91,7 +91,7 @@ describe('Create expense API (IA-26)', () => {
     it('requires authentication', async () => {
         const res = await request(app)
             .post('/api/expenses')
-            .send({ expense_date: expenseDate, amount: 12.34, purpose: 'Business' });
+            .send({ expense_date: expenseDate, amount: 1234, purpose: 'Business' });
 
         expect(res.status).to.equal(401);
     });
@@ -120,7 +120,7 @@ describe('Create expense API (IA-26)', () => {
         const res = await request(app)
             .post('/api/expenses')
             .set('Authorization', `Bearer ${employerToken}`)
-            .send({ expense_date: expenseDate, amount: 12.34, purpose: 'Business' });
+            .send({ expense_date: expenseDate, amount: 1234, purpose: 'Business' });
 
         expect(res.status).to.equal(403);
     });
@@ -154,7 +154,7 @@ describe('Create expense API (IA-26)', () => {
             .set('Authorization', `Bearer ${employeeToken}`)
             .send({
                 expense_date: expenseDate,
-                amount: 12.34,
+                amount: 1234,
                 purpose: 'Business',
                 // Client values must not replace the authenticated owner or initial status.
                 user_id: employer._id.toString(),
@@ -192,6 +192,7 @@ describe('Create expense API (IA-26)', () => {
         expect(res.status).to.equal(200);
         expect(res.body).to.have.lengthOf(2);
         expect(res.body[0].purpose).to.equal('Business');
+        expect(res.body[0].amount).to.equal(1234);
         expect(res.body[0].status).to.equal('Submitted');
         expect(new Date(res.body[0].expense_date).getTime())
             .to.be.greaterThan(new Date(res.body[1].expense_date).getTime());
@@ -199,15 +200,15 @@ describe('Create expense API (IA-26)', () => {
     });
 
     for (const [description, body] of [
-        ['a missing expense date', { amount: 12.34, purpose: 'Business' }],
-        ['an invalid calendar date', { expense_date: '2026-02-30', amount: 12.34, purpose: 'Business' }],
-        ['a future date', { expense_date: nextDate(expenseDate), amount: 12.34, purpose: 'Business' }],
+        ['a missing expense date', { amount: 1234, purpose: 'Business' }],
+        ['an invalid calendar date', { expense_date: '2026-02-30', amount: 1234, purpose: 'Business' }],
+        ['a future date', { expense_date: nextDate(expenseDate), amount: 1234, purpose: 'Business' }],
         ['a missing amount', { expense_date: expenseDate, purpose: 'Business' }],
         ['a zero amount', { expense_date: expenseDate, amount: 0, purpose: 'Business' }],
         ['a negative amount', { expense_date: expenseDate, amount: -1, purpose: 'Business' }],
-        ['an amount with more than two decimal places', { expense_date: expenseDate, amount: 1.234, purpose: 'Business' }],
-        ['a missing purpose', { expense_date: expenseDate, amount: 12.34 }],
-        ['a purpose outside the accepted values', { expense_date: expenseDate, amount: 12.34, purpose: 'Work' }],
+        ['a fractional number of cents', { expense_date: expenseDate, amount: 1234.5, purpose: 'Business' }],
+        ['a missing purpose', { expense_date: expenseDate, amount: 1234 }],
+        ['a purpose outside the accepted values', { expense_date: expenseDate, amount: 1234, purpose: 'Work' }],
     ]) {
         // Apply the same 400 test to each invalid input case.
         it(`returns 400 for ${description}`, async () => {
