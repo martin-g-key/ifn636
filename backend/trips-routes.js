@@ -3,6 +3,7 @@
 
 const express = require('express');
 const TripsFacade = require('./services/TripsFacade');
+const TripsCsvExporter = require('./services/TripsCsvExporter');
 
 const router = express.Router();
 
@@ -39,7 +40,7 @@ router.get('/export', async (req, res, next) => {
         );
 
         res.setHeader('Content-Type', 'text/csv; charset=utf-8');
-        res.attachment('trips.csv');
+        res.attachment(TripsCsvExporter.getFileName());
         res.send(csv);
     } catch (err) {
         fail(err, res, next);

@@ -28,4 +28,23 @@ describe('Trip API routes (database calls stubbed)', () => {
         expect(res.status).to.equal(200);
         expect(res.body.fin_years).to.include('2025-26').and.include(res.body.current);
     });
+    it('IA-22 downloads trips as CSV', async () => {
+        const lean = sinon.stub().resolves([]);
+        const sort = sinon.stub().returns({ lean });
+        sinon.stub(Trips, 'find').returns({ sort });
+
+        const res = await request(appForEmployee())
+            .get('/api/trips/export?fin_year=2026-27');
+
+        expect(res.status).to.equal(200);
+
+        expect(res.headers['content-type'])
+            .to.include('text/csv');
+
+        expect(res.headers['content-disposition'])
+            .to.match(/attachment; filename="trips_\d{8}_\d{2}-\d{2}\.csv"/);
+
+        expect(res.text)
+            .to.include('trip_id,user_id,trip_date');
+    });
 });

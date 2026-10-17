@@ -1,4 +1,10 @@
 // backend/services/TripsFacade.js
+//
+// FACADE: one simple interface in front of several subsystems
+//   - TripVisibility        (role rules + financial-year filter)
+//   - FinancialYear         (what a financial year is)
+//   - Trips / Users models
+//
 // Routes call only the public methods. Everything marked # is private.
 
 const TripsModel = require('../models/Trips');
