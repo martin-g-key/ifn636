@@ -54,4 +54,22 @@ router.post('/', async (req, res, next) => {
     } catch (err) { fail(err, res, next); }
 });
 
+// PUT /api/trips/:id
+router.put('/:id', async (req, res, next) => {
+    try {
+        res.json(await TripsFacade.updateTrip(req.user, req.params.id, req.body));
+    } catch (err) {
+        fail(err, res, next); 
+    }
+});
+
+// DELETE /api/trips/:id
+router.delete('/:id', async (req, res, next) => {
+    try {
+        await TripsFacade.deleteTrip(req.user, req.params.id);
+        res.status(204).end();
+    } catch (err) { fail(err, res, next); }
+});
+
+
 module.exports = router;
