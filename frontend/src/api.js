@@ -194,6 +194,17 @@ export async function createExpense(expense) {
     return body;
 }
 
+export async function updateExpense(id, expense) {
+    const res = await fetch(`${API_BASE}/api/expenses/${encodeURIComponent(id)}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', ...authHeaders() },
+        body: JSON.stringify(expense),
+    });
+    const body = await res.json();
+    if (!res.ok) throw new Error(body.error || 'Failed to update expense');
+    return body;
+}
+
 export async function fetchExpenses() {
     // The report endpoint scopes results to the authenticated user's role.
     const res = await fetch(`${API_BASE}/api/reports/expenses`, { headers: { ...authHeaders() } });
