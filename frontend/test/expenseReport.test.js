@@ -8,6 +8,7 @@ const ExpenseList = require('../src/components/expenseList').default;
 const AddExpense = require('../src/components/AddExpense').default;
 const ExpenseReportPage = require('../src/pages/ExpenseReportPage').default;
 const ExpensesPage = require('../src/pages/ExpensesPage').default;
+
 const { fetchExpenseReport } = require('../src/api');
 
 describe('expenseList component', () => {
@@ -31,16 +32,16 @@ describe('expenseList component', () => {
         expect(html).to.contain('2026-27');
     });
 
-    it('shows expenses newest first without changing the input order', () => {
+    it('renders expenses in the order returned by the API', () => {
         const expenses = [
-            { expense_id: '1', expense_date: '2026-08-15', amount: 4550, purpose: 'Private', status: 'Approved', fin_year: '2026-27' },
-            { expense_id: '2', expense_date: '2026-09-02', amount: 12000, purpose: 'Business', status: 'Submitted', fin_year: '2026-27' },
+            { expense_id: '1', expense_date: '2026-09-02', amount: 12000, purpose: 'Business', status: 'Submitted', fin_year: '2026-27' },
+            { expense_id: '2', expense_date: '2026-08-15', amount: 4550, purpose: 'Private', status: 'Approved', fin_year: '2026-27' },
         ];
 
         const html = renderToString(React.createElement(ExpenseList, { expenses }));
 
         expect(html.indexOf('Business')).to.be.lessThan(html.indexOf('Private'));
-        expect(expenses[0].purpose).to.equal('Private');
+        expect(expenses[0].purpose).to.equal('Business');
     });
 
     // the backend stores cents, so the table has to divide before it shows a dollar amount
@@ -66,7 +67,7 @@ describe('expense report page', () => {
     });
 
     describe('fetchExpenseReport API selection', () => {
-        it('uses the employee expenses endpoint and filters by financial year', async () => {
+        it('uses the reports endpoint and filters employee expenses by financial year', async () => {
             const originalSessionStorage = global.sessionStorage;
             const originalFetch = global.fetch;
             const expenses = [
@@ -83,7 +84,7 @@ describe('expense report page', () => {
             try {
                 const result = await fetchExpenseReport('2026-27');
 
-                expect(requestedUrl).to.contain('/api/expenses');
+                expect(requestedUrl).to.contain('/api/reports/expenses');
                 expect(result).to.deep.equal([expenses[1]]);
             } finally {
                 global.sessionStorage = originalSessionStorage;

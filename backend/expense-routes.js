@@ -33,17 +33,6 @@ function isValidAmount(value) {
         Number.isInteger(value);
 }
 
-router.get('/', async (req, res, next) => {
-    try {
-        // Employees can only read expenses for their JWT subject.
-        const expenses = await Expense.find({ user_id: req.user.sub })
-            .sort({ expense_date: -1 });
-        res.json(expenses);
-    } catch (err) {
-        next(err);
-    }
-});
-
 router.post('/', requireRole('Employee'), async (req, res, next) => {
     // Ignore client-supplied ownership and status,
     // those are controlled by auth and workflow.

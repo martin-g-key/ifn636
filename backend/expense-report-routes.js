@@ -30,7 +30,7 @@ router.get('/expenses', async (req, res, next) => {
             filter.fin_year = req.query.fin_year;
         }
 
-        const rows = await Expense.find(filter).sort({ expense_date: 1 });
+        const rows = await Expense.find(filter).sort({ expense_date: -1 });
         res.json(rows);
     } catch (err) {
         next(err);
