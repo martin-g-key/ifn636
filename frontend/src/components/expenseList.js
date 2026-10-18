@@ -9,8 +9,16 @@ function formatAmount(cents) {
     return (Number(cents || 0) / 100).toFixed(2);
 }
 
-export default function ExpenseList({ expenses, onEdit }) {
+export default function ExpenseList({
+    expenses,
+    onEdit,
+    onApprove,
+    onReject,
+    updatingExpenseId,
+}) {
     if (expenses.length === 0) return <p>No expenses for that financial year.</p>;
+
+    const hasActions = onEdit || onApprove || onReject;
 
     return (
         <table>
@@ -21,7 +29,7 @@ export default function ExpenseList({ expenses, onEdit }) {
                     <th>Purpose</th>
                     <th>Status</th>
                     <th>Financial year</th>
-                    {onEdit && <th>Actions</th>}
+                    {hasActions && <th>Actions</th>}
                 </tr>
             </thead>
             <tbody>
@@ -32,11 +40,29 @@ export default function ExpenseList({ expenses, onEdit }) {
                         <td>{expense.purpose}</td>
                         <td>{expense.status}</td>
                         <td>{expense.fin_year}</td>
-                        {onEdit && (
+                        {hasActions && (
                             <td>
                                 {(expense.status === 'Submitted' || expense.status === 'Rejected') && (
-                                    <button type="button" onClick={() => onEdit(expense)}>
+                                    onEdit && <button type="button" onClick={() => onEdit(expense)}>
                                         Edit Expense
+                                    </button>
+                                )}
+                                {expense.status === 'Submitted' && onApprove && (
+                                    <button
+                                        type="button"
+                                        disabled={updatingExpenseId === expense.expense_id}
+                                        onClick={() => onApprove(expense)}
+                                    >
+                                        {updatingExpenseId === expense.expense_id ? 'Updating...' : 'Approve'}
+                                    </button>
+                                )}
+                                {expense.status === 'Submitted' && onReject && (
+                                    <button
+                                        type="button"
+                                        disabled={updatingExpenseId === expense.expense_id}
+                                        onClick={() => onReject(expense)}
+                                    >
+                                        {updatingExpenseId === expense.expense_id ? 'Updating...' : 'Reject'}
                                     </button>
                                 )}
                             </td>

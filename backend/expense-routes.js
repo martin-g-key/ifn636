@@ -1,6 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const Expense = require('./models/Expense');
+const UsersModel = require('./models/Users');
 const { requireRole } = require('./auth');
 
 const router = express.Router();
@@ -79,6 +80,57 @@ router.put('/:id', requireRole('Employee'), async (req, res, next) => {
         next(err);
     }
 });
+
+async function decideExpense(req, res, next, status) {
+    if (!mongoose.isValidObjectId(req.params.expense_id)) {
+        return res.status(404).json({ error: 'Expense not found' });
+    }
+
+    try {
+        const employees = await UsersModel.find({
+            employer_username: req.user.username,
+            role: 'Employee',
+        }).select('_id');
+        const employeeIds = employees.map((employee) => employee._id);
+        const scope = {
+            _id: req.params.expense_id,
+            user_id: { $in: employeeIds },
+            purpose: 'Business',
+        };
+        const expense = await Expense.findOne(scope);
+
+        if (!expense) {
+            return res.status(404).json({ error: 'Expense not found' });
+        }
+        if (expense.status !== 'Submitted') {
+            return res.status(409).json({ error: 'Only Submitted expenses can be approved or rejected' });
+        }
+
+        const updates = { status };
+        if (status === 'Approved') {
+            updates.approved_at = new Date();
+        }
+        const updatedExpense = await Expense.findOneAndUpdate(
+            { ...scope, status: 'Submitted' },
+            { $set: updates },
+            { returnDocument: 'after', runValidators: true }
+        );
+
+        if (!updatedExpense) {
+            return res.status(409).json({ error: 'Only Submitted expenses can be approved or rejected' });
+        }
+
+        return res.json(updatedExpense);
+    } catch (err) {
+        return next(err);
+    }
+}
+
+router.post('/:expense_id/approve', requireRole('Employer'), (req, res, next) =>
+    decideExpense(req, res, next, 'Approved'));
+
+router.post('/:expense_id/reject', requireRole('Employer'), (req, res, next) =>
+    decideExpense(req, res, next, 'Rejected'));
 
 router.post('/', requireRole('Employee'), async (req, res, next) => {
     // Ignore client-supplied ownership and status,
