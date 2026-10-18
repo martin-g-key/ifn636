@@ -102,6 +102,17 @@ export async function deleteTrip(id) {
     }
 }
 
+// createTrip 
+export async function createTrip(trip) {
+    const res = await fetch(`${API_BASE}/api/trips`, {
+        method: 'POST',
+        header: {'Content-Type': 'application/json', ...authHeaders() },
+        body: JSON.stringify(trip),
+    });
+    const body = await res.json();
+    if (!res.ok) throw new Error(body.error || 'Failed to create trip');
+    return body;
+}
 
 // fetchFinYears
 export async function fetchFinYears() {
