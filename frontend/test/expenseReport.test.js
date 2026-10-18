@@ -7,6 +7,7 @@ const { renderToString } = require('react-dom/server');
 const ExpenseList = require('../src/components/expenseList').default;
 const AddExpense = require('../src/components/AddExpense').default;
 const ExpenseReportPage = require('../src/pages/ExpenseReportPage').default;
+const ExpensesPage = require('../src/pages/ExpensesPage').default;
 const { fetchExpenseReport } = require('../src/api');
 
 describe('expenseList component', () => {
@@ -91,17 +92,28 @@ describe('expense report page', () => {
         });
     });
 
-    it('shows Add Expense to employees only', () => {
+    it('does not show the Add Expense form on the report page', () => {
         const originalSessionStorage = global.sessionStorage;
         global.sessionStorage = {
             getItem: (key) => key === 'role' ? 'Employee' : null,
         };
         const employeeHtml = renderToString(React.createElement(ExpenseReportPage));
+        global.sessionStorage = originalSessionStorage;
+
+        expect(employeeHtml).to.not.contain('Add Expense');
+    });
+
+    it('shows the Add Expense action on the expenses page to employees only', () => {
+        const originalSessionStorage = global.sessionStorage;
+        global.sessionStorage = {
+            getItem: (key) => key === 'role' ? 'Employee' : null,
+        };
+        const employeeHtml = renderToString(React.createElement(ExpensesPage));
 
         global.sessionStorage = {
             getItem: (key) => key === 'role' ? 'Employer' : null,
         };
-        const employerHtml = renderToString(React.createElement(ExpenseReportPage));
+        const employerHtml = renderToString(React.createElement(ExpensesPage));
         global.sessionStorage = originalSessionStorage;
 
         expect(employeeHtml).to.contain('Add Expense');

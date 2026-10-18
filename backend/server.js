@@ -45,6 +45,9 @@ app.use(express.static(distPath));
 // ------ routes ------ 
 // authentication routes
 app.post('/api/login', login);
+app.get('/api/auth/validate', requireAuth, (req, res) => {
+    res.json({ user: req.user });
+});
 app.use('/api/users', requireAuth, requireRole('Employer'), usersRouter);
 app.use('/api/trips', requireAuth, tripsRouter);
 // Expense routes use the authenticated user to scope reads and creates.

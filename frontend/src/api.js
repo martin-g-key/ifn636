@@ -45,6 +45,18 @@ export async function login(username,password) {
     return res.json();
 }
 
+export async function validateSession() {
+    const res = await fetch(`${API_BASE}/api/auth/validate`, {
+        headers: { ...authHeaders() },
+    });
+    if (!res.ok) {
+        const error = new Error('Failed to validate session');
+        error.status = res.status;
+        throw error;
+    }
+    return res.json();
+}
+
 // updateUser
 export async function updateUser(id, fields) {
     const res = await fetch(`${API_BASE}/api/users/${id}`, {
