@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import TripList from '../components/tripList';
-import { fetchTrips, fetchFinYears } from '../api';
+import { fetchTrips, fetchFinYears, udpateTrip, deleteTrip } from '../api';
 
 export default function TripsPage() {
     const [trips, setTrips] = useState([]);
@@ -44,6 +44,30 @@ export default function TripsPage() {
         return () => { ignore = true; };
     }, [finYear]);
 
+    const canEdit = sessionStorage.getItem('role') === 'Employee';
+
+    async function handleDelete(id) {
+        if (!window.confirm('Delete this trip?')) return;
+        try {
+            await deleteTrip(id);
+            setTrips((prev) => prev.filter((t) => t.id != id));
+        } catch (err) { setError(err.message); }
+    }
+
+    async function handleSave(id, fields) {
+        try {
+            setError(null);
+            const updated = await updateTrip(id, fields);
+            setTrips((prev) => prev
+                .map((t) => (t.id === id ? updated : t))
+                .filter((t) => t.finYear === finYear));
+                return true
+        } catch (err) {
+            setError(err.message);
+            return false;
+        }
+    }
+
     return (
         <div>
             <h2>Trips</h2>
@@ -65,7 +89,7 @@ export default function TripsPage() {
                 </div>
             )}
 
-            {loading ? <p>Loading...</p> : <TripList trips={trips} />}
+            {loading ? <p>Loading...</p> : <TripList trips={trips} canEdit={canEdit} onSave={handleSave} onDelete={handleDelete}/>}
         </div>
     );
 }
