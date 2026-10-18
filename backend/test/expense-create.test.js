@@ -192,20 +192,32 @@ describe('Create expense API (IA-26)', () => {
         });
     });
 
-    it('returns only the employee expenses, oldest first', async () => {
+    it('returns only the employee expenses, newest first', async () => {
         const res = await request(app)
             .get('/api/reports/expenses')
             .set('Authorization', `Bearer ${employeeToken}`);
 
         expect(res.status).to.equal(200);
         expect(res.body).to.have.lengthOf(2);
-        expect(res.body[0].purpose).to.equal('Private');
-        expect(res.body[1].purpose).to.equal('Business');
-        expect(res.body[1].amount).to.equal(1234);
-        expect(res.body[1].status).to.equal('Submitted');
+        expect(res.body[0].purpose).to.equal('Business');
+        expect(res.body[0].amount).to.equal(1234);
+        expect(res.body[0].status).to.equal('Submitted');
+        expect(res.body[1].purpose).to.equal('Private');
         expect(new Date(res.body[0].expense_date).getTime())
-            .to.be.lessThan(new Date(res.body[1].expense_date).getTime());
+            .to.be.greaterThan(new Date(res.body[1].expense_date).getTime());
         expect(res.body.every((expense) => expense.user_id === employee._id.toString())).to.equal(true);
+    });
+
+    it('exports employee expenses oldest first', async () => {
+        const res = await request(app)
+            .get('/api/reports/expenses/export?format=csv')
+            .set('Authorization', `Bearer ${employeeToken}`);
+
+        const olderDate = previousDate(expenseDate).split('-').reverse().join('/');
+        const newerDate = expenseDate.split('-').reverse().join('/');
+
+        expect(res.status).to.equal(200);
+        expect(res.text.indexOf(olderDate)).to.be.lessThan(res.text.indexOf(newerDate));
     });
 
     for (const [description, body] of [
