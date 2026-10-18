@@ -14,7 +14,7 @@ const FinancialYear = require('./FinancialYear');
 const TripsCsvExporter = require('./TripsCsvExporter');
 
 // add tripChain for validation checks
-const { tripChain } = require('./TripChecks');
+const { tripChain } = require('./TripsChecks');
 
 class TripsFacade {
     // private
@@ -85,7 +85,7 @@ class TripsFacade {
     }
 
     // delete a trip --> use TripsChain, Trip Facade
-    static async deleteTrip(user, TripId) {
+    static async deleteTrip(user, tripId) {
         const {trip} = await tripChain.handle({ user, tripId});
         await trip.deleteOne();
     }

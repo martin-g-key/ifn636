@@ -21,6 +21,7 @@ class TripCheck {
     async handle(ctx) {
         await this.check(ctx);
         if (this.next) await this.next.handle(ctx);
+        return ctx;
     }
 
     // each subclass to provicde its own check
