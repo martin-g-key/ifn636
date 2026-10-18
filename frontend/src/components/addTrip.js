@@ -20,7 +20,7 @@ export default function AddTrip({ onCreated, onCancel }) {
     const [error, setError] = useState('');
     const [saving, setSaving] = useState(false);
 
-        const handleSubmit = async (event) => {
+    const handleSubmit = async (event) => {
         event.preventDefault();
         setError('');
         setSaving(true);

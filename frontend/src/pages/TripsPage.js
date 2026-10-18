@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import TripList from '../components/tripList';
-import { fetchTrips, fetchFinYears, udpateTrip, deleteTrip } from '../api';
-import AddTrip from '../components/addTrip'
+import { fetchTrips, fetchFinYears, updateTrip, deleteTrip } from '../api';
+import AddTrip from '../components/addTrip';
 
 export default function TripsPage() {
     const [trips, setTrips] = useState([]);
@@ -53,7 +53,7 @@ export default function TripsPage() {
         if (!window.confirm('Delete this trip?')) return;
         try {
             await deleteTrip(id);
-            setTrips((prev) => prev.filter((t) => t.id != id));
+            setTrips((prev) => prev.filter((t) => t.id !== id));
         } catch (err) { setError(err.message); }
     }
 
@@ -63,7 +63,7 @@ export default function TripsPage() {
             const updated = await updateTrip(id, fields);
             setTrips((prev) => prev
                 .map((t) => (t.id === id ? updated : t))
-                .filter((t) => t.finYear === finYear));
+                .filter((t) => t.fin_year === finYear));
                 return true
         } catch (err) {
             setError(err.message);
@@ -71,7 +71,7 @@ export default function TripsPage() {
         }
     }
 
-    async function handleTripCreated(trip) {
+    function handleTripCreated(trip) {
         setFinYears((current) => (current.includes(trip.fin_year) ? current :
         [...current, trip.fin_year].sort().reverse()));
 

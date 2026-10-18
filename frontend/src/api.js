@@ -106,7 +106,7 @@ export async function deleteTrip(id) {
 export async function createTrip(trip) {
     const res = await fetch(`${API_BASE}/api/trips`, {
         method: 'POST',
-        header: {'Content-Type': 'application/json', ...authHeaders() },
+        headers: {'Content-Type': 'application/json', ...authHeaders() },
         body: JSON.stringify(trip),
     });
     const body = await res.json();
