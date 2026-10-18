@@ -1,4 +1,5 @@
 const express = require('express');
+const mongoose = require('mongoose');
 const Expense = require('./models/Expense');
 const { requireRole } = require('./auth');
 
@@ -32,6 +33,52 @@ function isValidAmount(value) {
         value > 0 &&
         Number.isInteger(value);
 }
+
+router.put('/:id', requireRole('Employee'), async (req, res, next) => {
+    if (!mongoose.isValidObjectId(req.params.id)) {
+        return res.status(404).json({ error: 'Expense not found' });
+    }
+
+    const body = req.body && typeof req.body === 'object' && !Array.isArray(req.body)
+        ? req.body
+        : {};
+    const { expense_date, amount, purpose } = body;
+
+    if (!isValidExpenseDate(expense_date)) {
+        return res.status(400).json({ error: 'expense_date must be a valid date no later than today' });
+    }
+    if (!isValidAmount(amount)) {
+        return res.status(400).json({ error: 'amount must be a positive whole number of Australian cents' });
+    }
+    if (purpose !== 'Business' && purpose !== 'Private') {
+        return res.status(400).json({ error: "purpose must be 'Business' or 'Private'" });
+    }
+
+    try {
+        const expense = await Expense.findOne({
+            _id: req.params.id,
+            user_id: req.user.sub,
+        });
+        if (!expense) {
+            return res.status(404).json({ error: 'Expense not found' });
+        }
+        if (expense.status !== 'Submitted' && expense.status !== 'Rejected') {
+            return res.status(403).json({ error: 'Only Submitted or Rejected expenses can be edited' });
+        }
+
+        expense.expense_date = expense_date;
+        expense.amount = amount;
+        expense.purpose = purpose;
+        if (expense.status === 'Rejected') {
+            expense.status = 'Submitted';
+        }
+
+        await expense.save();
+        res.json(expense);
+    } catch (err) {
+        next(err);
+    }
+});
 
 router.post('/', requireRole('Employee'), async (req, res, next) => {
     // Ignore client-supplied ownership and status,

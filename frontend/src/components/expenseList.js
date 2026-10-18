@@ -9,7 +9,7 @@ function formatAmount(cents) {
     return (Number(cents || 0) / 100).toFixed(2);
 }
 
-export default function ExpenseList({ expenses }) {
+export default function ExpenseList({ expenses, onEdit }) {
     if (expenses.length === 0) return <p>No expenses for that financial year.</p>;
 
     return (
@@ -21,6 +21,7 @@ export default function ExpenseList({ expenses }) {
                     <th>Purpose</th>
                     <th>Status</th>
                     <th>Financial year</th>
+                    {onEdit && <th>Actions</th>}
                 </tr>
             </thead>
             <tbody>
@@ -31,6 +32,15 @@ export default function ExpenseList({ expenses }) {
                         <td>{expense.purpose}</td>
                         <td>{expense.status}</td>
                         <td>{expense.fin_year}</td>
+                        {onEdit && (
+                            <td>
+                                {(expense.status === 'Submitted' || expense.status === 'Rejected') && (
+                                    <button type="button" onClick={() => onEdit(expense)}>
+                                        Edit Expense
+                                    </button>
+                                )}
+                            </td>
+                        )}
                     </tr>
                 ))}
             </tbody>
