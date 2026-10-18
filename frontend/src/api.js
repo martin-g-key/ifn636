@@ -78,6 +78,42 @@ export async function fetchTrips(finYear) {
     return res.json();
 }
 
+// updateTrip
+export async function updateTrip(id, fields) {
+    const res = await fetch(`${API_BASE}/api/trips/${id}`, {
+        method: 'PUT',
+        headers: {'Content-Type': 'application/json', ...authHeaders()},
+        body: JSON.stringify(fields),
+    });
+    const body = await res.json();
+    if (!res.ok) throw new Error(body.error || 'Failed to update Trip');
+    return body;
+}
+
+// deleteTrip
+export async function deleteTrip(id) {
+    const res = await fetch(`${API_BASE}/api/trips/${id}`, {
+        method: 'DELETE',
+        headers: { ...authHeaders() },
+    });
+    if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.error || 'Failed to delete Trip');
+    }
+}
+
+// createTrip 
+export async function createTrip(trip) {
+    const res = await fetch(`${API_BASE}/api/trips`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json', ...authHeaders() },
+        body: JSON.stringify(trip),
+    });
+    const body = await res.json();
+    if (!res.ok) throw new Error(body.error || 'Failed to create trip');
+    return body;
+}
+
 // fetchFinYears
 export async function fetchFinYears() {
     const res = await fetch(`${API_BASE}/api/trips/fin-years`, {

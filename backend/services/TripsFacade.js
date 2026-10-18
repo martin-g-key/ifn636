@@ -13,6 +13,9 @@ const TripVisibility = require('./TripVisibility');
 const FinancialYear = require('./FinancialYear');
 const TripsCsvExporter = require('./TripsCsvExporter');
 
+// add tripChain for validation checks
+const { tripChain } = require('./TripsChecks');
+
 class TripsFacade {
     // private
 
@@ -72,6 +75,22 @@ class TripsFacade {
         await created.populate('user_id', 'username');
         return created;
     }
+
+    // edit a trip --> use TripsChain, Trip Facade
+    static async updateTrip(user, tripId, body ) {
+        const {trip} = await tripChain.handle({user, tripId });
+        trip.set(TripsFacade.#pickEditable(body));
+        await trip.save();
+        return trip.populate('user_id', 'username');
+    }
+
+    // delete a trip --> use TripsChain, Trip Facade
+    static async deleteTrip(user, tripId) {
+        const {trip} = await tripChain.handle({ user, tripId});
+        await trip.deleteOne();
+    }
+
+
     // Export visible trips as CSV
     static async createExport(user, { finYear } = {}) {
         const filter = await TripsFacade.#filterFor(user, finYear);
