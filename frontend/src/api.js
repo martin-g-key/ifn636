@@ -205,6 +205,16 @@ export async function updateExpense(id, expense) {
     return body;
 }
 
+export async function decideExpense(id, decision) {
+    const res = await fetch(`${API_BASE}/api/expenses/${encodeURIComponent(id)}/${decision}`, {
+        method: 'POST',
+        headers: { ...authHeaders() },
+    });
+    const body = await res.json();
+    if (!res.ok) throw new Error(body.error || `Failed to ${decision} expense`);
+    return body;
+}
+
 export async function fetchExpenses() {
     // The report endpoint scopes results to the authenticated user's role.
     const res = await fetch(`${API_BASE}/api/reports/expenses`, { headers: { ...authHeaders() } });

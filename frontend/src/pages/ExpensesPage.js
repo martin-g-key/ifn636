@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import AddExpense from '../components/AddExpense';
 import EditExpense from '../components/EditExpense';
 import ExpenseList from '../components/expenseList';
-import { fetchExpenses } from '../api';
+import { decideExpense, fetchExpenses } from '../api';
 
 export default function ExpensesPage() {
     const [expenses, setExpenses] = useState([]);
@@ -11,8 +11,11 @@ export default function ExpensesPage() {
     const [showAddForm, setShowAddForm] = useState(false);
     const [editingExpense, setEditingExpense] = useState(null);
     const [submitted, setSubmitted] = useState(false);
+    const [updatingExpenseId, setUpdatingExpenseId] = useState(null);
     const isEmployee = typeof sessionStorage !== 'undefined' &&
         sessionStorage.getItem('role') === 'Employee';
+    const isEmployer = typeof sessionStorage !== 'undefined' &&
+        sessionStorage.getItem('role') === 'Employer';
 
     useEffect(() => {
         let ignore = false;
@@ -53,6 +56,19 @@ export default function ExpensesPage() {
         await refreshExpenses(true);
     };
 
+    const handleExpenseDecision = async (expense, decision) => {
+        setUpdatingExpenseId(expense.expense_id);
+        setError(null);
+        try {
+            await decideExpense(expense.expense_id, decision);
+            setExpenses(await fetchExpenses());
+        } catch (err) {
+            setError(err.message);
+        } finally {
+            setUpdatingExpenseId(null);
+        }
+    };
+
     return (
         <div>
             <h2>Expenses</h2>
@@ -88,6 +104,13 @@ export default function ExpensesPage() {
                 <ExpenseList
                     expenses={expenses}
                     onEdit={isEmployee ? setEditingExpense : undefined}
+                    onApprove={isEmployer
+                        ? (expense) => handleExpenseDecision(expense, 'approve')
+                        : undefined}
+                    onReject={isEmployer
+                        ? (expense) => handleExpenseDecision(expense, 'reject')
+                        : undefined}
+                    updatingExpenseId={updatingExpenseId}
                 />
             )}
         </div>
