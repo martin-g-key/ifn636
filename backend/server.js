@@ -33,7 +33,9 @@ app.use((req, res, next) => {
 
 
 // Functions to be used on every request, before handler
-app.use(cors());
+app.use(cors({
+    exposedHeaders: ['Content-Disposition']
+}));
 app.use(express.json());
 
 // the pipeline builds the react app into frontend/dist, so serve it from here
