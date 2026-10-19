@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import AddExpense from '../components/AddExpense';
 import EditExpense from '../components/EditExpense';
 import ExpenseList from '../components/expenseList';
-import { decideExpense, fetchExpenses } from '../api';
+import { decideExpense, deleteExpense, fetchExpenses } from '../api';
 
 export default function ExpensesPage() {
     const [expenses, setExpenses] = useState([]);
@@ -12,6 +12,7 @@ export default function ExpensesPage() {
     const [editingExpense, setEditingExpense] = useState(null);
     const [submitted, setSubmitted] = useState(false);
     const [updatingExpenseId, setUpdatingExpenseId] = useState(null);
+    const [deletingExpenseId, setDeletingExpenseId] = useState(null);
     const isEmployee = typeof sessionStorage !== 'undefined' &&
         sessionStorage.getItem('role') === 'Employee';
     const isEmployer = typeof sessionStorage !== 'undefined' &&
@@ -69,6 +70,23 @@ export default function ExpensesPage() {
         }
     };
 
+    const handleExpenseDelete = async (expense) => {
+        if (!window.confirm('Delete this expense?')) return;
+
+        setDeletingExpenseId(expense.expense_id);
+        setError(null);
+        try {
+            await deleteExpense(expense.expense_id);
+            setExpenses((current) => current.filter(
+                (item) => item.expense_id !== expense.expense_id
+            ));
+        } catch (err) {
+            setError(err.message);
+        } finally {
+            setDeletingExpenseId(null);
+        }
+    };
+
     return (
         <div>
             <h2>Expenses</h2>
@@ -104,6 +122,7 @@ export default function ExpensesPage() {
                 <ExpenseList
                     expenses={expenses}
                     onEdit={isEmployee ? setEditingExpense : undefined}
+                    onDelete={isEmployee ? handleExpenseDelete : undefined}
                     onApprove={isEmployer
                         ? (expense) => handleExpenseDecision(expense, 'approve')
                         : undefined}
@@ -114,6 +133,7 @@ export default function ExpensesPage() {
                         ? (expense) => handleExpenseDecision(expense, 'pay')
                         : undefined}
                     updatingExpenseId={updatingExpenseId}
+                    deletingExpenseId={deletingExpenseId}
                 />
             )}
         </div>

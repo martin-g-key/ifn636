@@ -6,6 +6,26 @@ const { requireRole } = require('./auth');
 
 const router = express.Router();
 
+router.delete('/:expense_id', requireRole('Employee'), async (req, res, next) => {
+    if (!mongoose.isValidObjectId(req.params.expense_id)) {
+        return res.status(404).json({ error: 'Expense not found' });
+    }
+
+    try {
+        const expense = await Expense.findOneAndDelete({
+            _id: req.params.expense_id,
+            user_id: req.user.sub,
+        });
+        if (!expense) {
+            return res.status(404).json({ error: 'Expense not found' });
+        }
+
+        return res.status(204).end();
+    } catch (err) {
+        return next(err);
+    }
+});
+
 function todayInBrisbane() {
     // Apply the project's Australian business time zone 
     // when validating and rejecting future dates.

@@ -15,11 +15,13 @@ export default function ExpenseList({
     onApprove,
     onReject,
     onPay,
+    onDelete,
     updatingExpenseId,
+    deletingExpenseId,
 }) {
     if (expenses.length === 0) return <p>No expenses for that financial year.</p>;
 
-    const hasActions = onEdit || onApprove || onReject || onPay;
+    const hasActions = onEdit || onApprove || onReject || onPay || onDelete;
 
     return (
         <table>
@@ -73,6 +75,15 @@ export default function ExpenseList({
                                         onClick={() => onPay(expense)}
                                     >
                                         {updatingExpenseId === expense.expense_id ? 'Updating...' : 'Paid'}
+                                    </button>
+                                )}
+                                {onDelete && (
+                                    <button
+                                        type="button"
+                                        disabled={deletingExpenseId === expense.expense_id}
+                                        onClick={() => onDelete(expense)}
+                                    >
+                                        {deletingExpenseId === expense.expense_id ? 'Deleting...' : 'Delete Expense'}
                                     </button>
                                 )}
                             </td>
