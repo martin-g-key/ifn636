@@ -1,7 +1,7 @@
 // configure connection to 
-const mongoose = require("mongoose");
 const bcrypt = require('bcryptjs');
 const UsersModel = require('../models/Users');
+const DatabaseConnection = require('./dbSingleton');
 
 // seed Employer User 
 async function seedEmployer() {
@@ -25,7 +25,8 @@ async function seedEmployer() {
 // define connectDB function that also calls seedEmployer
 const connectDB = async () => {
     try {
-        await mongoose.connect(process.env.MONGODB_URI);
+        // Connect through the Singleton, then continue the existing startup flow.
+        await DatabaseConnection.getInstance().connect(process.env.MONGODB_URI);
         console.log("MongoDB conection established");
         await seedEmployer();
     } catch (error) {
