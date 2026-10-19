@@ -246,6 +246,17 @@ export async function updateExpense(id, expense) {
     return body;
 }
 
+export async function deleteExpense(id) {
+    const res = await fetch(`${API_BASE}/api/expenses/${encodeURIComponent(id)}`, {
+        method: 'DELETE',
+        headers: { ...authHeaders() },
+    });
+    if (!res.ok) {
+        const body = await res.json();
+        throw new Error(body.error || 'Failed to delete expense');
+    }
+}
+
 export async function decideExpense(id, decision) {
     const res = await fetch(`${API_BASE}/api/expenses/${encodeURIComponent(id)}/${decision}`, {
         method: 'POST',
