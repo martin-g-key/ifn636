@@ -8,6 +8,31 @@ function authHeaders() {
     return token ? { Authorization: 'Bearer ' + token } : {};
 }
 
+// IA-22: Private helpers for trip CSV export
+function finYearQuery(finYear) {
+    return finYear ? `?fin_year=${encodeURIComponent(finYear)}` : '';
+}
+
+function filenameFromResponse(res) {
+    const header = res.headers.get('Content-Disposition') || '';
+    const match = /filename="?([^";]+)"?/.exec(header);
+    return match ? match[1] : 'trips.csv';
+}
+
+function saveBlob(blob, filename) {
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+
+    link.href = url;
+    link.download = filename;
+
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+
+    URL.revokeObjectURL(url);
+}
+
 // fetchUsers
 export async function fetchUsers() {
     const res = await fetch(`${API_BASE}/api/users`, { headers: {...authHeaders() } }); // changed to added in authenctication
@@ -133,6 +158,22 @@ export async function fetchFinYears() {
     });
     if (!res.ok) throw new Error('Failed to fetch financial years');
     return res.json();
+}
+
+// IA-22: Export trips as CSV
+export async function exportTrips(finYear) {
+    const res = await fetch(
+        `${API_BASE}/api/trips/export${finYearQuery(finYear)}`,
+        {
+            headers: { ...authHeaders() },
+        }
+    );
+
+    if (!res.ok) {
+        throw new Error('Failed to export trips');
+    }
+
+    saveBlob(await res.blob(), filenameFromResponse(res));
 }
 
 // fetchFinancialYears
