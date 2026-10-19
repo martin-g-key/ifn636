@@ -1,6 +1,7 @@
 // home page -- skeleton
 
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 
 // Import componenets and API calls
 import UserList from '../components/userList';
@@ -55,14 +56,18 @@ export default function HomePage() {
         return (
             <div>
                 <h1>Tracker App</h1>
-                <h2>Trips</h2>
-                {/* Placholder buttons */}
+                <p>Welcome! please choose an option:</p>
+
                 <div>
-                    <button type="button">Add Trip</button>
+                    <Link to="/trips"><button type="button">Manage your Trips</button></Link>
                 </div>
                 <div>
-                    <button type="button">View Trip List</button>
+                    <Link to="/expenses"><button type="button">Manage your Expenses</button></Link>
                 </div>
+                <div>
+                    <Link to="/expense-reports"><button type="button">Get an Expense Report</button></Link>
+                </div>
+
             </div>
         );
     }

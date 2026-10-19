@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import TripList from '../components/tripList';
-import { fetchTrips, fetchFinYears, updateTrip, deleteTrip } from '../api';
+import { fetchTrips, fetchFinYears, updateTrip, deleteTrip, exportTrips } from '../api';
 import AddTrip from '../components/addTrip';
 
 export default function TripsPage() {
@@ -8,6 +8,7 @@ export default function TripsPage() {
     const [finYears, setFinYears] = useState([]);
     const [finYear, setFinYear] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [exporting, setExporting] = useState(false);
     const [error, setError] = useState(null);
     const [showAddForm, setShowAddForm] = useState(false);
 
@@ -84,6 +85,20 @@ export default function TripsPage() {
         setShowAddForm(false);
     }
 
+    // IA-22: Export trips as CSV
+    async function handleExport() {
+        setError(null);
+        setExporting(true);
+        
+        try {
+            await exportTrips(finYear);
+        } catch (err) {
+            setError(err.message);
+        } finally {
+            setExporting(false);
+        }
+    }
+
     return (
         <div>
             <h2>Trips</h2>
@@ -113,7 +128,14 @@ export default function TripsPage() {
                             <option key={fy} value={fy}>{fy}</option>
                         ))}
                     </select>
-                </div>
+                    <button
+                    type="button"
+                    onClick={handleExport}
+                    disabled={exporting || loading || finYear === null}
+                    >
+                        {exporting ? 'Exporting...' : 'Export CSV'}
+                        </button>
+                        </div>
             )}
 
             {loading ? <p>Loading...</p> : <TripList trips={trips} canEdit={canEdit} onSave={handleSave} onDelete={handleDelete}/>}
