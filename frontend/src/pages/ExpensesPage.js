@@ -110,6 +110,9 @@ export default function ExpensesPage() {
                     onReject={isEmployer
                         ? (expense) => handleExpenseDecision(expense, 'reject')
                         : undefined}
+                    onPay={isEmployer
+                        ? (expense) => handleExpenseDecision(expense, 'pay')
+                        : undefined}
                     updatingExpenseId={updatingExpenseId}
                 />
             )}
