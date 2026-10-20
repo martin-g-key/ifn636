@@ -69,6 +69,10 @@ app.get('/api/health', (req, res) => {
     res.json({ status: 'ok', server: SERVER_ID})
 });
 
+// Return 404 for unknown API routes.
+app.use('/api', (req, res) => {
+    res.status(404).json({ error: 'API endpoint not found' });
+});
 
 // react router handles the paths inside the app, so anything that is not an
 // api call gets index.html and the browser works out which page to show.
